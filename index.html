@@ -2,223 +2,266 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>ESCAPE FROM TARTARIA - 16BIT EARTHBOUND</title>
+<title>ESCAPE FROM TARTARIA - SNES RPG</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <link rel="icon" href="data:image/svg+xml,[STRIPPED]">
 <style>
-html,body{margin:0;background:#0a0a0a;color:#fff;font-family:monospace;height:100%;overflow:hidden}
-body{display:flex;justify-content:center;align-items:center;background:radial-gradient(#222,#000)}
+html,body{margin:0;background:#0a0a14;color:#fff;font-family:monospace;height:100%;overflow:hidden}
+body{display:flex;justify-content:center;align-items:center;background:radial-gradient(#1a1a3a,#000)}
 #snes{width:256px;height:240px;background:#000;border:4px solid #fff;position:relative;overflow:hidden;image-rendering:pixelated;box-shadow:0 0 0 4px #000,0 0 0 8px #fff}
-#screen{width:100%;height:100%;position:relative;background:#000}
-#mapCanvas{width:100%;height:144px;display:block;image-rendering:pixelated;background:#111;border-bottom:2px solid #fff}
-#battleBg{position:absolute;top:0;left:0;width:100%;height:144px;display:none;image-rendering:pixelated}
-#textBox{position:absolute;bottom:0;left:0;right:0;height:96px;background:#000;border-top:3px solid #fff;padding:6px;box-sizing:border-box;font-size:8px;line-height:10px;white-space:pre-wrap}
-#partyBar{position:absolute;top:0;right:0;width:72px;height:144px;background:rgba(0,0,0,0.85);border-left:2px solid #fff;padding:3px;box-sizing:border-box;font-size:6px}
-.hp{color:#ff6b6b}.pp{color:#6bff6b}
+#screen{width:100%;height:100%;position:relative}
+#map{width:100%;height:144px;display:block;image-rendering:pixelated;background:#000;border-bottom:3px solid #fff}
+#battleBg{position:absolute;top:0;left:0;width:100%;height:144px;display:none}
+#ui{position:absolute;bottom:0;left:0;right:0;height:96px;background:#101030;border-top:3px solid #fff;padding:5px;box-sizing:border-box;font-size:8px;line-height:10px;overflow:auto}
+#party{position:absolute;top:0;right:0;width:74px;height:144px;background:rgba(0,0,20,0.9);border-left:2px solid #fff;padding:3px;box-sizing:border-box;font-size:6px}
+.hp{color:#ff7777}.pp{color:#77ff77}.sel{ background:#fff;color:#000 }
 button{width:100%;background:#000;color:#fff;border:2px solid #fff;font-family:monospace;font-size:7px;padding:4px;margin:1px 0;text-align:left;cursor:pointer}
-button:hover,button:focus{background:#fff;color:#000;outline:none}
-.ebBox{border:2px solid #fff;padding:4px;margin:2px 0;background:#000}
-.small{font-size:6px;opacity:0.9}
-#controller{position:absolute;top:2px;left:2px;font-size:6px;background:#000;border:1px solid #fff;padding:2px}
-@media(min-width:500px){#snes{transform:scale(2.2)}} @media(min-width:900px){#snes{transform:scale(3.2)}}
+button:hover{background:#fff;color:#000}
+#ctrl{position:absolute;top:2px;left:2px;font-size:6px;background:#000;border:1px solid #fff;padding:2px;z-index:10}
+@media(min-width:520px){#snes{transform:scale(2.2)}} @media(min-width:900px){#snes{transform:scale(3)}}
 </style>
 </head>
 <body>
 <div id="snes">
 <div id="screen">
-<canvas id="mapCanvas" width="256" height="144"></canvas>
+<canvas id="map" width="256" height="144"></canvas>
 <canvas id="battleBg" width="256" height="144"></canvas>
-<div id="partyBar"></div>
-<div id="controller">🎮 NO PAD</div>
-<div id="textBox">LOADING 16BIT EARTHBOUND BUILD...</div>
+<div id="party"></div>
+<div id="ctrl">♪ AUTO | 🎮</div>
+<div id="ui">LOADING SNES RPG...</div>
 </div>
 </div>
-<audio id="mp3player" preload="auto" loop></audio>
+<audio id="music" preload="auto" loop></audio>
 <script>
-// --- AUTOMATED MP3 MUSIC - Pixabay License Free ---
-const MP3={
-overworld:"https://cdn.pixabay.com/download/audio/2022/03/15/audio_c8c8e8c5a3.mp3",
-town:"https://cdn.pixabay.com/download/audio/2022/03/10/audio_24f0b90e18.mp3",
-dungeon:"https://cdn.pixabay.com/download/audio/2022/03/09/audio_c01cc7a963.mp3",
-battle:"https://cdn.pixabay.com/download/audio/2022/01/18/audio_7cc04957e7.mp3",
-boss:"https://cdn.pixabay.com/download/audio/2021/10/07/audio_ec0c7d8a9c.mp3",
-title:"https://cdn.pixabay.com/download/audio/2022/03/15/audio_3a9f6dbaf0.mp3",
-victory:"https://cdn.pixabay.com/download/audio/2022/03/10/audio_49a54d836e.mp3"
+// --- FREE MP3 AUTO MUSIC (Pixabay Content License - free commercial) ---
+const TRACKS={
+ title:"https://cdn.pixabay.com/download/audio/2022/03/15/audio_3a9f6dbaf0.mp3",
+ overworld:"https://cdn.pixabay.com/download/audio/2022/03/15/audio_c8c8e8c5a3.mp3",
+ town:"https://cdn.pixabay.com/download/audio/2022/03/10/audio_24f0b90e18.mp3",
+ dungeon:"https://cdn.pixabay.com/download/audio/2022/03/09/audio_c01cc7a963.mp3",
+ battle:"https://cdn.pixabay.com/download/audio/2022/01/18/audio_7cc04957e7.mp3",
+ boss:"https://cdn.pixabay.com/download/audio/2021/10/07/audio_ec0c7d8a9c.mp3",
+ victory:"https://cdn.pixabay.com/download/audio/2022/03/10/audio_49a54d836e.mp3"
 };
-let currentMusic=null;
-function autoMusic(key){
-  if(currentMusic===key) return;
-  currentMusic=key;
-  const p=document.getElementById('mp3player');
-  p.src=MP3[key]||MP3.overworld;
-  p.volume=0.5;
-  p.play().catch(()=>{});
-  document.getElementById('controller').textContent="♪ "+key.toUpperCase()+" [AUTO]";
+let curMusic=null,musicOn=false;
+function playMusic(key){
+  if(curMusic===key) return;
+  curMusic=key;
+  const a=document.getElementById('music');
+  a.src=TRACKS[key]||TRACKS.overworld;
+  a.volume=0.5;
+  if(musicOn) a.play().catch(()=>{});
+  document.getElementById('ctrl').textContent="♪ "+key.toUpperCase()+" AUTO | 🎮";
 }
-let musicStarted=false;
-function startMusicOnInput(){ if(!musicStarted){ musicStarted=true; autoMusic('title'); } }
+function unlockMusic(){ musicOn=true; document.getElementById('music').play().catch(()=>{}); }
 
-// --- CONTROLLER SUPPORT ---
-let padIndex=null, lastButtons=[];
-window.addEventListener("gamepadconnected",(e)=>{ padIndex=e.gamepad.index; document.getElementById('controller').textContent="🎮 "+e.gamepad.id.slice(0,18); });
-window.addEventListener("gamepaddisconnected",()=>{ padIndex=null; document.getElementById('controller').textContent="🎮 NO PAD"; });
+// --- CONTROLLER + KEYBOARD ---
+let padIdx=null;
+window.addEventListener("gamepadconnected",e=>{padIdx=e.gamepad.index;});
+window.addEventListener("gamepaddisconnected",()=>{padIdx=null;});
+let lastBtn=[];
 function pollPad(){
-  if(padIndex===null){ requestAnimationFrame(pollPad); return; }
-  const gp=navigator.getGamepads()[padIndex]; if(!gp){ requestAnimationFrame(pollPad); return; }
-  const [up,down,left,right]=[12,13,14,15].map(i=>gp.buttons[i]?.pressed);
-  const a=gp.buttons[0]?.pressed, b=gp.buttons[1]?.pressed, x=gp.buttons[2]?.pressed, start=gp.buttons[9]?.pressed;
-  if(up &&!lastButtons[12]) move(0,-1);
-  if(down &&!lastButtons[13]) move(0,1);
-  if(left &&!lastButtons[14]) move(-1,0);
-  if(right &&!lastButtons[15]) move(1,0);
-  if(a &&!lastButtons[0]) confirm();
-  if(b &&!lastButtons[1]) cancel();
-  if(x &&!lastButtons[2]) openMenu();
-  if(start &&!lastButtons[9]) openMenu();
-  lastButtons=gp.buttons.map(b=>b.pressed);
+  if(padIdx!==null){
+    const gp=navigator.getGamepads()[padIdx];
+    if(gp){
+      if(gp.buttons[12]?.pressed &&!lastBtn[12]) move(0,-1);
+      if(gp.buttons[13]?.pressed &&!lastBtn[13]) move(0,1);
+      if(gp.buttons[14]?.pressed &&!lastBtn[14]) move(-1,0);
+      if(gp.buttons[15]?.pressed &&!lastBtn[15]) move(1,0);
+      if(gp.buttons[0]?.pressed &&!lastBtn[0]) doConfirm();
+      if(gp.buttons[1]?.pressed &&!lastBtn[1]) doCancel();
+      if(gp.buttons[9]?.pressed &&!lastBtn[9]) doMenu();
+      lastBtn=gp.buttons.map(b=>b.pressed);
+    }
+  }
   requestAnimationFrame(pollPad);
 }
 pollPad();
 
-// --- EARTHBOUND STYLE GAME ---
-const canvas=document.getElementById('mapCanvas'), ctx=canvas.getContext('2d');
-const battleCanvas=document.getElementById('battleBg'), btx=battleCanvas.getContext('2d');
-const textBox=document.getElementById('textBox'), partyBar=document.getElementById('partyBar');
+// --- SNES RPG CORE ---
+const cvs=document.getElementById('map'),ctx=cvs.getContext('2d');
+const bvs=document.getElementById('battleBg'),btx=bvs.getContext('2d');
+const ui=document.getElementById('ui'), partyDiv=document.getElementById('party');
 
-let state='TITLE', px=5, py=5, party=[], selected=0, battleTimer=0;
 const HEROES=[
-{name:"KAEL",role:"LEADER",hp:100,max:100,pp:20,str:14},{name:"LIRA",role:"PSI SCI",hp:70,max:70,pp:50,str:8},{name:"THORNE",role:"BRAWLER",hp:120,max:120,pp:5,str:18},
-{name:"SYLARA",role:"SCOUT",hp:80,max:80,pp:15,str:11},{name:"DRAVEN",role:"EX-MARK",hp:90,max:90,pp:10,str:13},{name:"NYRA",role:"MYSTIC",hp:65,max:65,pp:60,str:7},
-{name:"ROOK",role:"ENG",hp:85,max:85,pp:25,str:12},{name:"VESPER",role:"DIPLO",hp:75,max:75,pp:30,str:9},{name:"JAX",role:"SMUG",hp:95,max:95,pp:12,str:13},
-{name:"ELARA",role:"MEDIC",hp:80,max:80,pp:40,str:9},{name:"SILAS",role:"HIST",hp:70,max:70,pp:35,str:8},{name:"ZARA",role:"PILOT",hp:90,max:90,pp:18,str:12}
+{id:0,name:"KAEL",role:"LEADER",hp:100,max:100,pp:20,atk:14,def:8,color:"#ffeb3b"},
+{id:1,name:"LIRA",role:"PSI SCI",hp:70,max:70,pp:50,atk:8,def:5,color:"#7af"},
+{id:2,name:"THORNE",role:"BRAWLER",hp:120,max:120,pp:5,atk:18,def:12,color:"#f77"},
+{id:3,name:"SYLARA",role:"SCOUT",hp:80,max:80,pp:15,atk:11,def:7,color:"#7f7"},
+{id:4,name:"DRAVEN",role:"EX-MARK",hp:90,max:90,pp:10,atk:13,def:9,color:"#fa7"},
+{id:5,name:"NYRA",role:"MYSTIC",hp:65,max:65,pp:60,atk:7,def:4,color:"#f7f"},
+{id:6,name:"ROOK",role:"ENG",hp:85,max:85,pp:25,atk:12,def:10,color:"#aaa"},
+{id:7,name:"VESPER",role:"DIPLO",hp:75,max:75,pp:30,atk:9,def:6,color:"#aff"},
+{id:8,name:"JAX",role:"SMUG",hp:95,max:95,pp:12,atk:13,def:8,color:"#ffa"},
+{id:9,name:"ELARA",role:"MEDIC",hp:80,max:80,pp:40,atk:9,def:7,color:"#afa"},
+{id:10,name:"SILAS",role:"HIST",hp:70,max:70,pp:35,atk:8,def:6,color:"#aaf"},
+{id:11,name:"ZARA",role:"PILOT",hp:90,max:90,pp:18,atk:12,def:9,color:"#faf"}
 ];
-// Ultima/Wizardry style map 16x12
-let MAP=[
+
+// FIXED RECTANGULAR MAPS - 16x12 like SNES
+const OVERWORLD=[
 [1,1,1,1,1,1,1,1],
-[1,0,0,0,0,1,0,0,2,0,0,0,0,0,3,1],
-[1,0,1,1,0,1,0,1,1,1,0,1,1,0,0,1],
-[1,0,1,0,0,0,0,0,0,1,0,1,0,0,0,1],
-[1,0,0,0,1,1,0,1,0,0,0,0,0,1,0,1],
-[1,1,1,0,1,3,0,1,0,1,1,1,0,1,0,1],
-[1,0,0,0,0,0,0,1,0,0,2,0,0,0,0,1],
-[1,0,1,1,1,1,0,1,1,1,0,1],
-[1,0,0,2,0,0,0,0,0,0,0,1],
-[1,1,1,1,0,1,1,1,1,1,0,1,0,1,1,1],
-[1,0,0,0,0,1,0,0,0,0,4,1],
+[1,0,0,0,0,0,0,1,0,2,0,0,0,0,0,1],
+[1,0,1,1,0,1,0,1,0,1,1,1,0,1,0,1],
+[1,0,1,0,0,1,0,0,0,1,0,0,0,1,0,1],
+[1,0,0,0,1,1,0,1,0,0,0,1,0,0,0,1],
+[1,1,0,1,1,3,0,1,0,1,0,1],
+[1,0,0,0,0,0,0,1,0,2,0,0,0,1,0,1],
+[1,0,1,1,1,1,0,1,1,1,0,1,0,1,0,1],
+[1,0,0,2,0,0,0,0,0,0,0,1,0,0,0,1],
+[1,1,1,0,1,1,1,1,1,1,0,1,1,1,0,1],
+[1,0,0,0,0,0,0,0,0,0,0,0,0,0,4,1],
 [1,1,1,1,1,1,1,1]
 ];
-// 1=wall,0=floor,2=town,3=dungeon,4=boss
+const DUNGEON=[
+[1,1,1,1,1,1,1,1],
+[1,0,0,0,1,0,0,0,0,0,1,0,0,0,0,1],
+[1,0,1,0,1,0,1,1,1,0,1,0,1,1,0,1],
+[1,0,1,0,0,0,0,5,0,0,0,0,0,1,0,1],
+[1,0,1,1,1,1,0,1,1,1,1,1,0,1,0,1],
+[1,0,0,0,0,0,0,1,0,2,0,0,0,0,0,1],
+[1,1,1,1,1,1,0,1,0,1,0,1,1,1,0,1],
+[1,0,0,0,0,1,0,0,2,0,0,1],
+[1,0,1,1,1,1,1,1,0,1,1,1,0,1,0,1],
+[1,0,0,0,0,0,0,0,0,1,0,1],
+[1,0,1,1,1,1,1,1,0,1,0,1],
+[1,1,1,1,1,1,1,1]
+];
+// 1 wall,0 floor,2 town,3 overworld->dungeon,4 boss vessel,5 central vessel
 
-function draw16Bit(){
-  ctx.fillStyle='#0a0a2a'; ctx.fillRect(0,0,256,144);
-  // earthbound style checker
-  for(let y=0;y<12;y++) for(let x=0;x<16;x++){
-    let t=MAP[y][x];
-    if(t===1){ ctx.fillStyle='#3a3a5a'; ctx.fillRect(x*16,y*12,16,12); ctx.fillStyle='#fff'; ctx.fillRect(x*16+2,y*12+2,12,2); }
-    if(t===0){ ctx.fillStyle='#111'; ctx.fillRect(x*16,y*12,16,12); }
-    if(t===2){ ctx.fillStyle='#1a5a1a'; ctx.fillRect(x*16,y*12,16,12); ctx.fillStyle='#fff'; ctx.fillText("⌂",x*16+4,y*12+10); }
-    if(t===3){ ctx.fillStyle='#5a1a1a'; ctx.fillRect(x*16,y*12,16,12); ctx.fillStyle='#fff'; ctx.fillText("▼",x*16+4,y*12+10); }
-    if(t===4){ ctx.fillStyle='#5a5a1a'; ctx.fillRect(x*16,y*12,16,12); ctx.fillStyle='#fff'; ctx.fillText("♛",x*16+4,y*12+10); }
+let map=OVERWORLD, px=1, py=1, state='TITLE', party=[], sel=0, inBattle=false, battleEnemy=null, battleTurn=0;
+
+function draw(){
+  ctx.fillStyle='#101030'; ctx.fillRect(0,0,256,144);
+  for(let y=0;y<12;y++){
+    for(let x=0;x<16;x++){
+      let t=map[y][x];
+      if(t===1){ ctx.fillStyle='#2a2a4a'; ctx.fillRect(x*16,y*12,16,12); ctx.fillStyle='#555'; ctx.fillRect(x*16+1,y*12+1,14,2); }
+      if(t===0){ ctx.fillStyle='#0a0a1a'; ctx.fillRect(x*16,y*12,16,12); ctx.fillStyle='#1a1a2a'; ctx.fillRect(x*16+7,y*12+5,2,2); }
+      if(t===2){ ctx.fillStyle='#0a3a0a'; ctx.fillRect(x*16,y*12,16,12); ctx.fillStyle='#7f7'; ctx.fillRect(x*16+4,y*12+2,8,8); }
+      if(t===3){ ctx.fillStyle='#3a0a0a'; ctx.fillRect(x*16,y*12,16,12); ctx.fillStyle='#f77'; ctx.fillRect(x*16+6,y*12,4,12); }
+      if(t===4){ ctx.fillStyle='#3a3a0a'; ctx.fillRect(x*16,y*12,16,12); ctx.fillStyle='#ff0'; ctx.fillRect(x*16+2,y*12+2,12,8); }
+      if(t===5){ ctx.fillStyle='#3a3a5a'; ctx.fillRect(x*16,y*12,16,12); ctx.fillStyle='#fff'; ctx.fillRect(x*16+4,y*12+4,8,4); }
+    }
   }
-  // player - 16bit sprite
-  ctx.fillStyle='#ffeb3b'; ctx.fillRect(px*16+4,py*12+2,8,10);
-  ctx.fillStyle='#000'; ctx.fillRect(px*16+5,py*12+3,2,2); ctx.fillRect(px*16+9,py*12+3,2,2);
-  updatePartyBar();
+  // player 16-bit sprite
+  ctx.fillStyle='#ffeb3b'; ctx.fillRect(px*16+4,py*12+1,8,10);
+  ctx.fillStyle='#000'; ctx.fillRect(px*16+5,py*12+2,2,2); ctx.fillRect(px*16+9,py*12+2,2,2);
+  drawParty();
 }
-function updatePartyBar(){
-  let h=`<div class="ebBox">PARTY</div>`;
+function drawParty(){
+  let h=`<div style="border-bottom:1px solid #fff">PARTY</div>`;
   party.forEach((p,i)=>{
-    h+=`<div style="${i===selected?'background:#fff;color:#000':''}">${p.name}<br><span class="hp">HP:${p.hp}/${p.max}</span><br><span class="pp">PP:${p.pp}</span></div>`;
+    let cls=i===sel?'sel':'';
+    h+=`<div class="${cls}">${p.name}<br><span class="hp">HP ${p.hp}/${p.max}</span> <span class="pp">PP ${p.pp}</span></div>`;
   });
-  partyBar.innerHTML=h;
+  partyDiv.innerHTML=h;
 }
-function say(t,choices){
-  textBox.innerHTML=t;
-  if(choices){ choices.forEach(c=>{ const b=document.createElement('button'); b.textContent="> "+c.text; b.onclick=()=>{ startMusicOnInput(); c.fn(); }; textBox.appendChild(b); }); }
+function text(t,opts){
+  ui.innerHTML=t.replace(/\n/g,'<br>');
+  if(opts){ opts.forEach(o=>{ let b=document.createElement('button'); b.textContent=o.label; b.onclick=()=>{ unlockMusic(); o.fn(); }; ui.appendChild(b); }); }
 }
+
+// movement
 function move(dx,dy){
-  if(state!=='OVERWORLD') return;
-  startMusicOnInput();
+  if(state!=='OVER' && state!=='DUNGE') return;
   let nx=px+dx, ny=py+dy;
-  if(MAP[ny] && MAP[ny][nx]!==1){ px=nx; py=ny; draw16Bit();
-    let tile=MAP[py][px];
-    if(tile===2){ state='TOWN'; autoMusic('town'); say("TOWN: Survivor cache.\n'Underground city is real.'",[{text:"HEAL PARTY",fn:()=>{party.forEach(p=>p.hp=p.max); state='OVERWORLD'; autoMusic('overworld'); say("Healed! Press move."); draw16Bit();}},{text:"LEAVE",fn:()=>{state='OVERWORLD'; autoMusic('overworld'); say("Back to ruins.");}}]); }
-    if(tile===3){ state='DUNGEON'; autoMusic('dungeon'); enterDungeon(); }
-    if(tile===4){ startBattle(true); }
-    if(Math.random()<0.12) startBattle(false);
-  }
+  if(ny<0||ny>=12||nx<0||nx>=16) return;
+  if(map[ny][nx]===1) return;
+  px=nx; py=ny; draw();
+  let tile=map[py][px];
+  if(tile===2){ state='TOWN'; playMusic('town'); text("TOWN: Survivor cache.\n'The crystal city still hums.'\nHP restored.",[{label:"LEAVE",fn:()=>{ party.forEach(p=>p.hp=p.max); state=map===OVERWORLD?'OVER':'DUNGE'; playMusic(map===OVERWORLD?'overworld':'dungeon'); draw(); text("Back to exploring. D-Pad to move."); }}]); }
+  if(tile===3){ map=DUNGEON; px=1; py=1; state='DUNGE'; playMusic('dungeon'); draw(); text("UNDERGROUND CITY - Wizardry maze.\nVessel at center [5].",[{label:"OK",fn:()=>text("Find the white vessel.")}]); }
+  if(tile===5){ state='VESSEL'; playMusic('town'); text("VESSEL ONLINE - Chrono Trigger style\nChoose fate of Tartaria:",[
+    {label:"TIME - Prevent Mark",fn:()=>ending("TIME")},
+    {label:"SPACE - Call allies",fn:()=>ending("SPACE")},
+    {label:"DIMENSION - Shift",fn:()=>ending("DIMENSION")},
+    {label:"FREE TARTARIA NOW",fn:()=>ending("ULTIMATE")}
+  ]); }
+  if(tile===4){ startBattle(true); }
+  if(map===OVERWORLD && Math.random()<0.10) startBattle(false);
 }
-function confirm(){ const btn=textBox.querySelector('button'); if(btn) btn.click(); }
-function cancel(){ if(state==='TOWN'||state==='DUNGEON'){ state='OVERWORLD'; autoMusic('overworld'); say("You leave."); draw16Bit(); } }
-function openMenu(){ say("MENU: Tartaria\n[Earthbound style]\nA=Confirm B=Cancel\nX=Inventory",[{text:"CHECK STATS",fn:()=>{say(party.map(p=>`${p.name} ${p.role} HP${p.hp} STR${p.str}`).join('\n'));}},{text:"CLOSE",fn:()=>{draw16Bit(); say("Use D-Pad to move.");}}]); }
 
-function enterDungeon(){
-  say("UNDERGROUND CITY - Wizardry style maze.\nCrystals hum. Vessels ahead.",[{text:"BOARD VESSEL",fn:()=>{state='VESSEL'; autoMusic('town'); say("VESSEL: TIME / SPACE / DIM / FREE TARTARIA",[
-    {text:"TIME",fn:()=>win('TIME')},{text:"SPACE",fn:()=>win('SPACE')},{text:"DIMENSION",fn:()=>win('DIM')},{text:"FREE TARTARIA",fn:()=>win('ULTIMATE')}
-  ])}}]);
-}
 function startBattle(isBoss){
-  state='BATTLE'; autoMusic(isBoss?'boss':'battle');
-  canvas.style.display='none'; battleCanvas.style.display='block';
-  let enemy={name:isBoss?"AUTHORITY PRIME":"MARKED PATROL",hp:isBoss?200:60};
-  battleTimer=0;
-  function battleLoop(){
-    if(state!=='BATTLE') return;
-    // earthbound psychedelic bg
-    battleTimer+=0.08;
-    for(let y=0;y<144;y++){ let c=Math.floor(127+127*Math.sin(y*0.05+battleTimer)); btx.fillStyle=`rgb(${c},${255-c},${(c+100)%255})`; btx.fillRect(0,y,256,1); }
-    btx.fillStyle='#fff'; btx.font='12px monospace'; btx.fillText(enemy.name+" HP:"+enemy.hp,10,20);
-    btx.fillText("A=ATTACK B=PSI",10,130);
-    requestAnimationFrame(battleLoop);
+  inBattle=true; state='BATTLE'; playMusic(isBoss?'boss':'battle');
+  cvs.style.display='none'; bvs.style.display='block';
+  battleEnemy={name:isBoss?"AUTHORITY PRIME":"MARKED PATROL",hp:isBoss?180:55,max:isBoss?180:55};
+  battleTurn=0;
+  let t=0;
+  function loop(){
+    if(!inBattle) return;
+    t+=0.07;
+    for(let y=0;y<144;y++){ let c=Math.floor(127+127*Math.sin(y*0.04+t)); btx.fillStyle=`rgb(${c},${(255-c)},${(c*1.5)%255})`; btx.fillRect(0,y,256,1); }
+    btx.fillStyle='#fff'; btx.font='10px monospace'; btx.fillText(battleEnemy.name+" HP:"+battleEnemy.hp,8,14);
+    btx.fillText(party[sel].name+" HP:"+party[sel].hp+" PP:"+party[sel].pp,8,130);
+    requestAnimationFrame(loop);
   }
-  battleLoop();
-  say(`${enemy.name} appears!\nA=Attack B=PSI (Earthbound style)`,[
-    {text:"ATTACK",fn:()=>{
-      enemy.hp-=10+Math.floor(Math.random()*15);
-      if(enemy.hp<=0){ canvas.style.display='block'; battleCanvas.style.display='none'; state='OVERWORLD'; autoMusic('overworld'); say("Victory! Rolling HP...",[{text:"OK",fn:()=>{draw16Bit();}}]); if(isBoss) win('ULTIMATE'); else draw16Bit();
-      } else { party[0].hp=Math.max(1,party[0].hp-5); updatePartyBar(); say(`Enemy HP ${enemy.hp}\nYour HP rolling...`); }
+  loop();
+  text(`${battleEnemy.name} appears!\nEarthBound style battle\nA=Attack B=PSI`,[
+    {label:"ATTACK",fn:()=>{
+      let dmg=10+Math.floor(Math.random()*party[sel].atk);
+      battleEnemy.hp-=dmg;
+      if(battleEnemy.hp<=0) winBattle(isBoss);
+      else { party[sel].hp=Math.max(1,party[sel].hp-(5+Math.floor(Math.random()*8))); drawParty(); text(`You dealt ${dmg}. Enemy HP ${battleEnemy.hp}\nEnemy strikes!`); }
     }},
-    {text:"PSI FIRE",fn:()=>{ enemy.hp-=25; party[0].pp=Math.max(0,party[0].pp-5); updatePartyBar(); say(`PSI! Enemy HP ${enemy.hp}`); if(enemy.hp<=0){ canvas.style.display='block'; battleCanvas.style.display='none'; state='OVERWORLD'; autoMusic('overworld'); draw16Bit(); } }}
+    {label:"PSI FIRE -10PP",fn:()=>{
+      if(party[sel].pp<10){ text("Not enough PP!"); return; }
+      party[sel].pp-=10; let dmg=25; battleEnemy.hp-=dmg;
+      if(battleEnemy.hp<=0) winBattle(isBoss);
+      else text(`PSI FIRE ${dmg}! Enemy HP ${battleEnemy.hp}`);
+      drawParty();
+    }}
   ]);
 }
-function win(type){
-  autoMusic('victory');
-  canvas.style.display='block'; battleCanvas.style.display='none';
-  say(`=== ${type} VICTORY ===\nTartaria free! Earthbound style ending.\nController: Press A to play again.`,[{text:"PLAY AGAIN",fn:()=>{location.reload();}}]);
+function winBattle(isBoss){
+  inBattle=false; cvs.style.display='block'; bvs.style.display='none';
+  if(isBoss){ ending("ULTIMATE"); return; }
+  state=map===OVERWORLD?'OVER':'DUNGE'; playMusic(map===OVERWORLD?'overworld':'dungeon');
+  draw(); text("Victory! +10 EXP\nPress move to continue.");
 }
+function ending(type){
+  inBattle=false; cvs.style.display='block'; bvs.style.display='none';
+  state='END'; playMusic('victory');
+  text(`=== ${type} VICTORY ===\nTartaria free! Sun beneath sea rises.\nSNES RPG END\n\nA=Play Again`,[{label:"PLAY AGAIN",fn:()=>location.reload()}]);
+}
+function doConfirm(){ let b=ui.querySelector('button'); if(b) b.click(); }
+function doCancel(){ if(state==='TOWN'||state==='DUNGE'){ state=map===OVERWORLD?'OVER':'DUNGE'; playMusic(map===OVERWORLD?'overworld':'dungeon'); draw(); text("You step back."); } }
+function doMenu(){ text("MENU - EarthBound + Wizardry\nD-Pad Move A Confirm B Back\nParty: "+party.map(p=>p.name).join(','),[{label:"CLOSE",fn:()=>{ draw(); text("Continue exploring."); }}]); }
 
-// TITLE
-function showTitle(){
-  state='TITLE';
-  draw16Bit();
-  say("ESCAPE FROM TARTARIA\n16BIT EARTHBOUND FORMAT\nWizardry + Ultima + Earthbound\n\n🎮 Controller supported\n♪ Music AUTO changes\n\nPress A / Click to start",[
-    {text:"START - PICK 4 HEROES",fn:pickParty}
-  ]);
-  autoMusic('title');
+// TITLE + PARTY PICK - Chrono Trigger style 4
+function title(){
+  state='TITLE'; map=OVERWORLD; px=1; py=1; draw();
+  playMusic('title');
+  text("ESCAPE FROM TARTARIA\nSNES RPG - Chrono/EarthBound/FFVI\nUse D-Pad or WASD, A=Confirm\n\nTartaria lost. Authority spire looms.\nFind underground city.",[{label:"START - PICK 4 HEROES",fn:pick}]);
 }
-let pickIdx=0, tempParty=[];
-function pickParty(){
-  tempParty=[]; pickIdx=0;
-  function showPick(){
-    say(`PICK HERO ${pickIdx+1}/4\n${HEROES.map((h,i)=>`${i===selected?'▶':' '} ${h.name} ${h.role}`).join('\n')}`,[
-      {text:"SELECT",fn:()=>{ tempParty.push({...HEROES[selected]}); pickIdx++; if(pickIdx>=4){ party=tempParty; state='OVERWORLD'; autoMusic('overworld'); draw16Bit(); say("Use D-Pad/Stick to move.\nA=Confirm B=Cancel X=Menu\nFind towns ⌂ and dungeons ▼"); } else showPick(); }},
-      {text:"NEXT HERO",fn:()=>{ selected=(selected+1)%HEROES.length; showPick(); }}
+let pickList=[], pickSel=0;
+function pick(){
+  pickList=[]; pickSel=0;
+  function show(){
+    let t=`PICK HERO ${pickList.length+1}/4\n`;
+    HEROES.forEach((h,i)=>{ t+=`${i===pickSel?'▶':' '} ${h.name} ${h.role} HP${h.max}\n`; });
+    text(t,[
+      {label:"SELECT",fn:()=>{
+        pickList.push({...HEROES[pickSel]});
+        if(pickList.length>=4){ party=pickList; sel=0; state='OVER'; playMusic('overworld'); draw(); text("Party ready! Find towns ⌂ and hatch ▼\nD-Pad to move. Controller works."); }
+        else show();
+      }},
+      {label:"NEXT",fn:()=>{ pickSel=(pickSel+1)%HEROES.length; show(); }},
+      {label:"PREV",fn:()=>{ pickSel=(pickSel-1+HEROES.length)%HEROES.length; show(); }}
     ]);
   }
-  showPick();
+  show();
 }
 
-showTitle();
-
-// keyboard fallback
+title();
 window.addEventListener('keydown',e=>{
-  startMusicOnInput();
-  if(e.key==='ArrowUp') move(0,-1);
-  if(e.key==='ArrowDown') move(0,1);
-  if(e.key==='ArrowLeft') move(-1,0);
-  if(e.key==='ArrowRight') move(1,0);
-  if(e.key==='Enter') confirm();
-  if(e.key==='Escape') cancel();
+  unlockMusic();
+  if(e.key==='ArrowUp'||e.key==='w') move(0,-1);
+  if(e.key==='ArrowDown'||e.key==='s') move(0,1);
+  if(e.key==='ArrowLeft'||e.key==='a') move(-1,0);
+  if(e.key==='ArrowRight'||e.key==='d') move(1,0);
+  if(e.key==='Enter') doConfirm();
+  if(e.key==='Escape') doCancel();
 });
 </script>
 </body>

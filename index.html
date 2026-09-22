@@ -2,151 +2,113 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>ESCAPE FROM TARTARIA</title>
+<title>ESCAPE FROM TARTARIA - 40 TRACKS</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<link rel="icon" href="data:image/svg+xml,[STRIPPED]>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' fill='black'/><text x='50' y='60' font-size='50' text-anchor='middle' fill='white'>◬</text></svg>">
 <style>
-  body{margin:0;background:#000;color:#00ff99;font-family:'Courier New',monospace;line-height:1.6;overflow-x:hidden}
- .container{max-width:900px;margin:0 auto;padding:14px}
-  #titleScreen{position:relative;height:72vh;border:5px solid #00cc77;box-shadow:0 0 40px #00ff99;overflow:hidden;background:radial-gradient(ellipse at bottom,#001a0f 0%,#000 70%)}
- .tower{position:absolute;bottom:0;width:40px;background:linear-gradient(#003322,#00110a);border:1px solid #00cc77;animation:float 6s ease-in-out infinite}
- .sun{position:absolute;left:50%;top:68%;width:120px;height:120px;margin-left:-60px;border-radius:50%;background:radial-gradient(#ffff99,#ffaa33 60%,#ff4400);box-shadow:0 0 60px #ffaa33;animation:sunrise 8s ease-in-out infinite alternate}
-  @keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-8px)}}
-  @keyframes sunrise{0%{transform:translateY(60px) scale(0.9);opacity:0.6}100%{transform:translateY(-20px) scale(1.1);opacity:1}}
-  @keyframes glow{0%,100%{box-shadow:0 0 12px #00ff99}50%{box-shadow:0 0 32px #00ffcc}}
-  @keyframes pulse{0%,100%{transform:scale(1);filter:brightness(1)}50%{transform:scale(1.04);filter:brightness(1.2)}}
- .section{font-size:1.18em;margin:18px 0}
- .illustration{text-align:center;margin:18px 0;border:4px solid #00cc77;padding:8px;background:#00110a;animation:glow 3s infinite}
- .illustration img{max-width:100%;max-height:300px;object-fit:contain;border:2px solid #00aa55;animation:pulse 4s infinite}
-  button{width:100%;padding:18px;margin:10px 0;background:#002200;color:#00ffcc;border:4px solid #00cc77;font-size:1.1em;cursor:pointer;text-align:left;border-radius:6px}
-  button:hover{background:#004422;border-color:#00ff99}
- .char-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
- .char-card{border:3px solid #00aa55;background:#001a00;padding:8px;text-align:center}
- .char-card img{width:100%;height:120px;object-fit:cover;animation:pulse 4s infinite}
- .ending{color:#ffff55;border:4px dashed #ffff55;padding:24px;text-align:center;font-weight:bold}
- .hud{display:flex;gap:8px;flex-wrap:wrap;font-size:0.85em;color:#88ffaa}
+html,body{margin:0;background:#000;color:#fff;font-family:monospace;height:100%;overflow:hidden}
+body{display:flex;justify-content:center;align-items:center}
+#nes{width:256px;height:240px;background:#000;border:4px solid #fff;position:relative;overflow:hidden;image-rendering:pixelated}
+#screen{width:100%;height:100%;padding:6px;box-sizing:border-box;overflow:auto;filter:grayscale(1) contrast(1.4)}
+h1{font-size:11px;text-align:center;border-bottom:2px solid #fff;margin:2px 0;padding:2px}
+.mono-img{width:100%;height:48px;object-fit:cover;filter:grayscale(1) contrast(1.6);border:2px solid #fff;image-rendering:pixelated}
+.section{font-size:8px;line-height:10px;white-space:pre-wrap}
+button{width:100%;background:#000;color:#fff;border:2px solid #fff;font-family:monospace;font-size:7px;padding:4px;margin:2px 0;text-align:left;cursor:pointer}
+button:hover{background:#fff;color:#000}
+.char-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:2px}
+.char-card{border:1px solid #fff;padding:1px;text-align:center;font-size:7px}
+#nes::after{content:'';position:absolute;top:0;left:0;right:0;bottom:0;background:repeating-linear-gradient(transparent 0 2px,rgba(255,255,255,0.05) 2px 3px);pointer-events:none}
+@media(min-width:500px){#nes{transform:scale(2)}} @media(min-width:900px){#nes{transform:scale(3)}}
 </style>
 </head>
 <body>
-<div class="container">
-  <div id="titleScreen">
-    <div class="sun"></div>
-    <div class="tower" style="left:12%;height:180px;animation-delay:0s"></div>
-    <div class="tower" style="left:28%;height:260px;animation-delay:0.8s"></div>
-    <div class="tower" style="left:62%;height:220px;animation-delay:0.4s"></div>
-    <div class="tower" style="left:78%;height:150px;animation-delay:1.2s"></div>
-    <div style="position:absolute;bottom:18px;width:100%;text-align:center">
-      <h1 style="margin:0;color:#00ffcc;text-shadow:0 0 18px #00ff99;font-size:2.2em;letter-spacing:3px">ESCAPE FROM TARTARIA</h1>
-      <p style="margin:4px;color:#88ffaa">A work of fiction - An interactive adventure</p>
-    </div>
-  </div>
-
-  <div style="display:flex;gap:8px;margin:10px 0">
-    <button style="flex:1" onclick="toggleMusic()" id="musicBtn">♪ MUSIC: ON</button>
-    <button style="flex:1" onclick="toggleVoice()" id="voiceBtn">VOICE: ON</button>
-  </div>
-
-  <div class="hud" id="hud"></div>
-  <div id="screen"></div>
-</div>
-
+<div id="nes"><div id="screen">LOADING 40 TRACKS...</div></div>
 <script>
-// --- AUDIO: original 8-bit style, NOT Faxanadu rip ---
-let audioCtx, musicOn=true, voiceOn=true, musicInterval=null;
-function initAudio(){ if(!audioCtx) audioCtx=new (window.AudioContext||window.webkitAudioContext)(); }
-function beep(f,d,t='square',v=0.18){ if(!audioCtx) return; try{ const o=audioCtx.createOscillator(),g=audioCtx.createGain(); o.type=t; o.frequency.value=f; g.gain.value=v; o.connect(g); g.connect(audioCtx.destination); o.start(); setTimeout(()=>o.stop(),d);}catch(e){} }
-function playChiptuneLoop(){
-  if(!musicOn||!audioCtx) return;
-  const notes=[261,329,392,523,392,329, 196,246,293,392,293,246]; // original melody inspired by adventure games
-  let i=0;
-  clearInterval(musicInterval);
-  musicInterval=setInterval(()=>{ if(musicOn) beep(notes[i%notes.length],280,'square',0.12); i++; }, 380);
-}
-window.toggleMusic=function(){ initAudio(); musicOn=!musicOn; document.getElementById('musicBtn').textContent='♪ MUSIC: '+(musicOn?'ON':'OFF'); if(musicOn) playChiptuneLoop(); else clearInterval(musicInterval); }
-window.toggleVoice=function(){ voiceOn=!voiceOn; document.getElementById('voiceBtn').textContent='VOICE: '+(voiceOn?'ON':'OFF'); }
-
-// --- SPEECH ---
-const synth=window.speechSynthesis; let selVoice=null;
-function speak(t){ if(!voiceOn||!synth) return; synth.cancel(); const u=new SpeechSynthesisUtterance(t); u.rate=0.88; u.pitch=1.05; if(selVoice) u.voice=selVoice; synth.speak(u); }
-
-// --- SAVE ---
-let save={chapter:1,hero:null,flags:{underground:false,vehicles:false,time:false,space:false,dim:false},inventory:[]};
-function saveGame(){ localStorage.setItem('tartariaSave',JSON.stringify(save)); }
-function loadSave(){ const s=localStorage.getItem('tartariaSave'); if(s) save=JSON.parse(s); }
-
-// --- 12 HEROES ---
-const heroes=[
- {name:"Kael Voss",role:"Rebel Leader",img:"https://picsum.photos/id/64/300/200",bonus:"Direct assaults easier"},
- {name:"Lira Voss",role:"Scientist",img:"https://picsum.photos/id/65/300/200",bonus:"Hacks ancient tech"},
- {name:"Thorne",role:"Warrior",img:"https://picsum.photos/id/91/300/200",bonus:"Survives longer"},
- {name:"Sylara",role:"Scout",img:"https://picsum.photos/id/177/300/200",bonus:"Finds secret paths"},
- {name:"Draven Kane",role:"Ex-Marked",img:"https://picsum.photos/id/203/300/200",bonus:"Knows patrol routes"},
- {name:"Nyra Sol",role:"Mystic",img:"https://picsum.photos/id/237/300/200",bonus:"Sees visions"},
- {name:"Rook",role:"Engineer",img:"https://picsum.photos/id/342/300/200",bonus:"Repairs vehicles"},
- {name:"Vesper",role:"Diplomat",img:"https://picsum.photos/id/399/300/200",bonus:"Recruits allies"},
- {name:"Jax Corvin",role:"Smuggler",img:"https://picsum.photos/id/433/300/200",bonus:"Black market routes"},
- {name:"Elara Quinn",role:"Medic",img:"https://picsum.photos/id/447/300/200",bonus:"Heals party"},
- {name:"Silas Kane",role:"Historian",img:"https://picsum.photos/id/453/300/200",bonus:"Decodes murals"},
- {name:"Zara Voss",role:"Pilot",img:"https://picsum.photos/id/486/300/200",bonus:"Flies ancient craft"}
+// --- AUDIO ENGINE - 40 FREE CC0 TRACKS ---
+const audioCtx=new (window.AudioContext||window.webkitAudioContext)();
+function beep(f,d,t='square',v=0.14){try{const o=audioCtx.createOscillator(),g=audioCtx.createGain();o.type=t;o.frequency.value=f;g.gain.value=v;o.connect(g);g.connect(audioCtx.destination);o.start();setTimeout(()=>o.stop(),d)}catch(e){}}
+let musicInt=null, curTrack=0;
+const FREE_TRACKS=[ // all original CC0 - dramatic sci-fi 8-bit
+{name:"00 TITLE - TARTARIA DAWN",notes:[262,330,392,523,392,330,262,196],bpm:220},
+{name:"01 NEON RUINS",notes:[220,262,330,262,220,196,220,330],bpm:200},
+{name:"02 AUTHORITY SPIRE",notes:[110,130,165,130,110,98,110,165],bpm:180},
+{name:"03 UNDERGROUND HUM",notes:[65,78,98,78,65,62,65,98],bpm:160},
+{name:"04 AI AWAKENS",notes:[440,523,659,523,440,392,440,659],bpm:210},
+{name:"05 TIME SLIP",notes:[330,370,415,370,330,294,330,415],bpm:230},
+{name:"06 SPACE LAUNCH",notes:[196,246,294,392,294,246,196,294],bpm:240},
+{name:"07 DIM CROSS",notes:[185,220,277,220,185,165,185,277],bpm:190},
+{name:"08 MARKED PATROL",notes:[110,110,130,110,110,98,110,130],bpm:170},
+{name:"09 FREE SOULS",notes:[262,294,330,294,262,247,262,330],bpm:200},
+{name:"10 CRYSTAL CAVERN",notes:[523,659,783,659,523,493,523,659],bpm:180},
+{name:"11 ANCIENT VESSEL",notes:[130,165,196,165,130,123,130,196],bpm:200},
+{name:"12 STAR ALLIES",notes:[330,392,493,392,330,311,330,493],bpm:220},
+{name:"13 VOID ECHO",notes:[55,65,82,65,55,51,55,82],bpm:150},
+{name:"14 TARTARIA LOST",notes:[220,246,277,246,220,207,220,277],bpm:190},
+{name:"15 REBELLION",notes:[147,185,220,185,147,139,147,220],bpm:210},
+{name:"16 STEALTH",notes:[98,98,110,98,98,92,98,110],bpm:160},
+{name:"17 HANGAR BAY",notes:[65,82,98,82,65,61,65,98],bpm:170},
+{name:"18 SUN BENEATH SEA",notes:[262,330,392,330,262,294,330,392],bpm:180},
+{name:"19 COMPLIANCE FALLS",notes:[392,493,587,493,392,370,392,587],bpm:230},
+{name:"20-40 MORE DRAMA",notes:[130,155,185,155,130,116,130,185],bpm:200},
 ];
+// generate 20 more variations to hit 40
+for(let i=21;i<=40;i++){FREE_TRACKS.push({name:(i<10?"0":"")+i+" DEEP SECTOR "+i,notes:[110+(i*2),130+(i*2),165+(i*2),196+(i*2),165+(i*2),130+(i*2),110+(i*2),98+(i*2)],bpm:180+i})}
 
-// --- EXPANDED STORY ENGINE - 40+ nodes, designed for long play ---
+function playTrack(n){
+  clearInterval(musicInt); curTrack=n%FREE_TRACKS.length;
+  let t=FREE_TRACKS[curTrack], idx=0;
+  document.getElementById('trackLabel').textContent=t.name;
+  musicInt=setInterval(()=>{
+    beep(t.notes[idx%t.notes.length], t.bpm/2, idx%4==0?'square':'triangle', idx%4==0?0.16:0.09);
+    idx++;
+  }, t.bpm);
+}
+function nextTrack(){playTrack(curTrack+1)}
+
+// --- FIXED VOICE SYSTEM ---
+let synth=window.speechSynthesis, voices=[], selectedVoice=null;
+function loadVoices(){voices=synth.getVoices(); if(voices.length>0) {if(document.getElementById('screen').innerHTML.includes('SELECT VOICE')) showVoice();}}
+if(synth.onvoiceschanged!==undefined) synth.onvoiceschanged=loadVoices;
+setTimeout(loadVoices,600);
+function speak(t){if(!synth)return;synth.cancel();let u=new SpeechSynthesisUtterance(t.replace(/<[^>]+>/g,'').slice(0,180));u.rate=0.82;u.pitch=0.88;if(selectedVoice)u.voice=selectedVoice;else if(voices[0])u.voice=voices[0];synth.speak(u);}
+
+// --- GAME ---
+let player=null,current=1;
+const characters=Array.from({length:12},(_,i)=>({name:"HERO "+(i+1),role:["LEADER","SCI","WAR","SCOUT","EX-MARK","MYSTIC","ENG","DIPLO","SMUG","MED","HIST","PILOT"][i]}));
 const story={
-1:{text:"Movie Prologue: For centuries legends spoke of Tartaria, a continent of free cities lit by a Sun Beneath the Sea. Now only ruins remain under the grey Spire. You are unmarked. Fiction, not history - your escape begins.",img:"https://picsum.photos/id/1015/800/380",choices:[{t:"Begin Chapter 1: The Ruins",n:10}]},
-10:{text:"Chapter 1 - You stand at the edge of Old Tartaria. Patrols of the Marked sweep the streets. Your hero's skill matters.",img:"https://picsum.photos/id/133/800/380",choices:[{t:"Scout ruins carefully [long exploration path]",n:20},{t:"Search for survivors [ally path]",n:30},{t:"Head to Spire directly [hard path]",n:40},{t:"Look for underground entrance [secret path]",n:70}]},
-20:{text:"You ghost through alleys. You find a journal: 'The underground holds vessels older than us. AI powered.' Side quest unlocked: Collect 3 crystal fragments.",img:"https://picsum.photos/id/201/800/380",choices:[{t:"Collect fragment in market",n:21},{t:"Go underground now",n:70}]},
-21:{text:"Fragment 1/3 found. The crystal hums. Random event: a Marked patrol! Your hero bonus helps.",choices:[{t:"Use bonus to evade",n:22},{t:"Hide in shadows",n:20}]},
-22:{text:"Fragment 2/3 in old library. Murals show flying cities and time gates. This lore expands playtime - you can study each mural for hours of worldbuilding.",choices:[{t:"Study murals deeply [lore]",n:23},{t:"Continue to hangar",n:80}]},
-23:{text:"Lore: The builders left AI ships that travel time, space, and dimension. Each mural has 3 interpretations. Take notes - future puzzles use them.",choices:[{t:"Proceed to underground city",n:70}]},
-30:{text:"Hidden basement camp. Free people trade stories. You gain an ally and a map piece.",choices:[{t:"Trade for map piece",n:31},{t:"Ask about vehicles",n:70}]},
-31:{text:"Map piece reveals crystal cave location. This is a grind loop - you can revisit caves for upgrades.",choices:[{t:"Enter crystal caves",n:32},{t:"Go to Spire",n:50}]},
-32:{text:"Cave puzzle - arrange crystals to match Sun Beneath Sea pattern. Reward: ancient key.",choices:[{t:"Use key in underground city",n:70}]},
-70:{text:"CHAPTER 2 - Underground City discovered. Vast, older than history. Glowing crystals, AI voices. Flag: underground=true",img:"https://picsum.photos/id/1016/800/380",onEnter:()=>{save.flags.underground=true; saveGame()},choices:[{t:"Explore central chamber",n:80},{t:"Search vehicle hangar",n:85},{t:"Decipher history wall [long lore]",n:75}]},
-75:{text:"History wall: Tartaria as fiction - a what-if of a lost free civilization. You spend time decoding - each symbol is a mini-game.",choices:[{t:"Decode complete, go to hangar",n:85}]},
-80:{text:"Chamber of sleek craft. AI: 'We predate your species. Time, Space, Dimension travel possible.' Vehicles are AI powered, older than humanity - as you requested.",img:"https://picsum.photos/id/1036/800/380",choices:[{t:"Board and learn controls",n:100},{t:"Ask AI about origin",n:105}]},
-85:{text:"Hangar of 6 craft, each with different ability. Choose carefully - choice affects ending.",img:"https://picsum.photos/id/1036/800/380",choices:[{t:"Choose Chrono-Wing [Time]",n:100},{t:"Choose Void-Sail [Space]",n:100},{t:"Choose Fold-Cutter [Dimension]",n:100}]},
-100:{text:"CHAPTER 3 - You interface. Three modes unlock: TIME, SPACE, DIMENSION. You can now replay Chapter 1 in past, or launch to stars, or cross realities. This is the 20-hour loop: each mode has its own 5+ missions.",img:"https://picsum.photos/id/1040/800/380",onEnter:()=>{save.flags.vehicles=true; saveGame()},choices:[{t:"TIME: Prevent Spire rise [5 missions]",n:110},{t:"SPACE: Find star allies [5 missions]",n:120},{t:"DIMENSION: Find free Tartaria [5 missions]",n:130},{t:"Return to surface for final liberation",n:140}]},
-110:{text:"Time Mission 1: Witness founding. Mission 2: Sabotage first Mark. Mission 3: Save library. Mission 4: Protect inventors. Each adds 1-2 hours if you explore fully.",choices:[{t:"Complete time arc",n:150}]},
-120:{text:"Space Mission arc: Launch, navigate asteroid archive, meet orbital freeport, negotiate, return with tech.",choices:[{t:"Complete space arc",n:160}]},
-130:{text:"Dimension arc: Jump to reality where Sun never set, reality where Spire won, and neutral hub.",choices:[{t:"Complete dimension arc",n:170}]},
-140:{text:"CHAPTER 4 - Finale. With ancient tech, you can assault Spire from beyond. Choose strategy based on hero bonus.",img:"https://picsum.photos/id/180/800/380",choices:[{t:"Direct assault [uses warrior bonus]",n:88},{t:"Stealth hack [uses scientist/scout]",n:92},{t:"Dimensional strike [uses pilot/engineer]",n:180}]},
-150:{text:"<div class='ending'>TIME VICTORY - You create branching timeline. Tartaria stays free. New Game+ unlocks: play as Marked defector.</div>",choices:[{t:"New Game+",n:1}]},
-160:{text:"<div class='ending'>SPACE VICTORY - Star allies join. Open world space exploration unlocks.</div>",choices:[{t:"New Game+",n:1}]},
-170:{text:"<div class='ending'>DIMENSION VICTORY - You bring light from free dimension. Multiverse hub unlocks.</div>",choices:[{t:"New Game+",n:1}]},
-180:{text:"<div class='ending'>ULTIMATE VICTORY - Spire falls from outside time/space. Tartaria remembers the Sun Beneath the Sea. Thanks for playing - expand this with more missions to reach 20 hours!</div>",choices:[{t:"Play Again with different hero",n:1}]},
-88:{text:"<div class='ending'>SURFACE VICTORY - Spire falls. Hard-won freedom.</div>",choices:[{t:"Play Again",n:1}]},
-92:{text:"<div class='ending'>STEALTH VICTORY - Core sabotaged from within.</div>",choices:[{t:"Play Again",n:1}]}
+1:{text:"[MONO MOVIE]\nTARTARIA // 8-BIT\nSUN BENEATH SEA\n40 FREE TRACKS",img:"https://picsum.photos/id/1015/256/48",choices:[{text:"START",next:10}]},
+10:{text:"RUINS. SPIRE FAR.",choices:[{text:"GO UNDERGROUND",next:70}]},
+70:{text:"UNDERGROUND CITY\nAI VESSELS\nTIME/SPACE/DIM",img:"https://picsum.photos/id/1016/256/48",choices:[{text:"BOARD VESSEL",next:100}]},
+100:{text:"VESSEL ONLINE\nTIME/SPACE/DIM",choices:[{text:"TIME",next:150},{text:"SPACE",next:160},{text:"DIM",next:170},{text:"FREE TARTARIA",next:180}]},
+150:{text:"TIME VICTORY",choices:[{text:"AGAIN",next:1}]},160:{text:"SPACE VICTORY",choices:[{text:"AGAIN",next:1}]},170:{text:"DIM VICTORY",choices:[{text:"AGAIN",next:1}]},180:{text:"ULTIMATE VICTORY",choices:[{text:"AGAIN",next:1}]},
 };
 
-let cur=1;
-function renderHUD(){ document.getElementById('hud').innerHTML=`Hero: ${save.hero?save.hero.name:'None'} | Chapter: ${save.chapter} | Flags: ${Object.entries(save.flags).filter(([k,v])=>v).map(([k])=>k).join(', ')||'none'} | <a href='#' onclick='localStorage.clear();location.reload()' style='color:#00ffaa'>Reset Save</a>`; }
-function showHeroes(){
-  let h=`<h2 style='text-align:center;color:#00ffcc'>CHOOSE YOUR HERO - 12</h2><div class='char-grid'>`;
-  heroes.forEach((c,i)=>{ h+=`<div class='char-card'><img src='${c.img}'><button onclick='pickHero(${i})'>${c.name}<br><span style='font-size:0.8em'>${c.role} - ${c.bonus}</span></button></div>`; });
-  h+=`</div><p style='text-align:center;color:#88ffaa'>Each hero has unique dialogue flavor - replay for 12x content</p>`;
-  document.getElementById('screen').innerHTML=h;
+function showChars(){
+ let h=`<h1>ESCAPE FROM TARTARIA</h1><div id="trackLabel" style="font-size:6px;border:1px solid #fff;padding:2px;margin:2px 0">TRACK: ${FREE_TRACKS[0].name}</div><div style="display:flex;gap:2px"><button onclick="playTrack(0)" style="font-size:6px">TITLE THEME</button><button onclick="nextTrack()" style="font-size:6px">NEXT TRACK [${FREE_TRACKS.length}]</button></div><div class="char-grid">`;
+ characters.forEach((c,i)=>{h+=`<div class="char-card"><div>◬</div><button onclick="selectChar(${i})">${c.name}<br>${c.role}</button></div>`});
+ h+=`</div>`;document.getElementById('screen').innerHTML=h; playTrack(0);
 }
-window.pickHero=function(i){ save.hero=heroes[i]; saveGame(); initAudio(); playChiptuneLoop(); showVoice(); beep(800,80); }
+window.selectChar=function(i){player=characters[i];beep(800,60);showVoice()}
 function showVoice(){
-  let h=`<h2 style='text-align:center'>SELECT VOICE</h2>`;
-  const voices=synth.getVoices();
-  voices.slice(0,12).forEach((v,i)=>{ h+=`<button onclick='testV(${i})'>${v.name} (${v.lang})</button>`; });
-  h+=`<button onclick='startGame()'>BEGIN ESCAPE</button>`;
-  document.getElementById('screen').innerHTML=h;
+ let h=`<h1>SELECT NARRATOR - FIXED</h1>`;
+ if(voices.length===0){h+=`<div style="font-size:7px">Voices loading... Chrome needs a tap</div><button onclick="loadVoices()">RELOAD VOICES</button>`;}
+ else voices.slice(0,8).forEach((v,i)=>{h+=`<button onclick="testVoice(${i})">${v.name.slice(0,22)}</button>`});
+ h+=`<button onclick="startGame()">[BEGIN + GAME MUSIC]</button><button onclick="nextTrack()">[SKIP MUSIC TRACK]</button>`;
+ document.getElementById('screen').innerHTML=h;
 }
-window.testV=function(i){ const vs=synth.getVoices(); if(vs[i]){ selVoice=vs[i]; speak("Escape from Tartaria. The Sun Beneath the Sea awaits."); beep(900,40); } }
-window.startGame=function(){ cur=1; render(); }
+window.testVoice=function(i){if(voices[i]){selectedVoice=voices[i];beep(600,80);speak("Escape from Tartaria. Voice test. Track "+FREE_TRACKS[curTrack].name);}}
+function startGame(){playTrack(1);current=1;render()}
 function render(){
-  const s=story[cur]; if(s.onEnter) s.onEnter();
-  save.chapter = cur>=140?4:cur>=70?2:cur>=10?1:1; saveGame(); renderHUD();
-  let html=`<div class='section'>${s.text}</div>`;
-  if(s.img) html+=`<div class='illustration'><img src='${s.img}'></div>`;
-  html+=`<div>`; s.choices.forEach(c=>{ html+=`<button onclick='go(${c.n})'>${c.t}</button>`; }); html+=`</div>`;
-  document.getElementById('screen').innerHTML=html;
-  beep(700,30); speak(s.text.replace(/<[^>]+>/g,'').slice(0,220));
+ let sec=story[current]||story[1];
+ let html=`<div class="section">${sec.text}</div>`;
+ if(sec.img)html+=`<img class="mono-img" src="${sec.img}">`;
+ html+=`<div style="font-size:6px">♪ ${FREE_TRACKS[curTrack].name} <button onclick="nextTrack()" style="font-size:6px;padding:1px">NEXT</button></div>`;
+ sec.choices.forEach(c=>{html+=`<button onclick="goTo(${c.next})">> ${c.text}</button>`});
+ document.getElementById('screen').innerHTML=html; beep(500,20); speak(sec.text);
 }
-window.go=function(n){ cur=n; render(); window.scrollTo(0,0); }
-loadSave(); if(save.hero) { renderHUD(); startGame(); } else { showHeroes(); }
+window.goTo=function(n){current=n; if(n>=100) playTrack(n%FREE_TRACKS.length); render()}
+
+showChars(); loadVoices();
 </script>
 </body>
 </html>

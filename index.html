@@ -2,111 +2,178 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>ESCAPE FROM TARTARIA - 40 TRACKS</title>
+<title>ESCAPE FROM TARTARIA - REPAIRED</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' fill='black'/><text x='50' y='60' font-size='50' text-anchor='middle' fill='white'>◬</text></svg>">
+<link rel="icon" href="data:image/svg+xml,[STRIPPED]">
 <style>
 html,body{margin:0;background:#000;color:#fff;font-family:monospace;height:100%;overflow:hidden}
 body{display:flex;justify-content:center;align-items:center}
-#nes{width:256px;height:240px;background:#000;border:4px solid #fff;position:relative;overflow:hidden;image-rendering:pixelated}
-#screen{width:100%;height:100%;padding:6px;box-sizing:border-box;overflow:auto;filter:grayscale(1) contrast(1.4)}
-h1{font-size:11px;text-align:center;border-bottom:2px solid #fff;margin:2px 0;padding:2px}
-.mono-img{width:100%;height:48px;object-fit:cover;filter:grayscale(1) contrast(1.6);border:2px solid #fff;image-rendering:pixelated}
-.section{font-size:8px;line-height:10px;white-space:pre-wrap}
-button{width:100%;background:#000;color:#fff;border:2px solid #fff;font-family:monospace;font-size:7px;padding:4px;margin:2px 0;text-align:left;cursor:pointer}
+#nes{width:256px;height:240px;background:#000;border:4px solid #fff;position:relative;overflow:hidden;image-rendering:pixelated;box-shadow:0 0 0 4px #000,0 0 0 8px #fff}
+#screen{width:100%;height:100%;padding:6px;box-sizing:border-box;overflow-y:auto;overflow-x:hidden;filter:grayscale(1) contrast(1.4)}
+h1{font-size:11px;text-align:center;border-bottom:2px solid #fff;margin:2px 0;padding:3px;letter-spacing:1px}
+.section{font-size:8px;line-height:10px;white-space:pre-wrap;word-break:break-word}
+button{width:100%;background:#000;color:#fff;border:2px solid #fff;font-family:monospace;font-size:7px;padding:5px;margin:2px 0;text-align:left;cursor:pointer}
 button:hover{background:#fff;color:#000}
-.char-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:2px}
-.char-card{border:1px solid #fff;padding:1px;text-align:center;font-size:7px}
-#nes::after{content:'';position:absolute;top:0;left:0;right:0;bottom:0;background:repeating-linear-gradient(transparent 0 2px,rgba(255,255,255,0.05) 2px 3px);pointer-events:none}
+.small{font-size:6px;opacity:0.8}
+.char-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:3px}
+.char-card{border:1px solid #fff;padding:2px;text-align:center}
+.pixel{width:100%;height:20px;background:#fff;display:flex;align-items:center;justify-content:center;color:#000;font-size:14px;filter:grayscale(1)}
+#titleCanvas{width:100%;height:58px;background:#000;border:2px solid #fff;display:block;image-rendering:pixelated}
+#nes::after{content:'';position:absolute;top:0;left:0;right:0;bottom:0;background:repeating-linear-gradient(transparent 0 2px,rgba(255,255,255,0.06) 2px 3px);pointer-events:none}
 @media(min-width:500px){#nes{transform:scale(2)}} @media(min-width:900px){#nes{transform:scale(3)}}
 </style>
 </head>
 <body>
-<div id="nes"><div id="screen">LOADING 40 TRACKS...</div></div>
+<div id="nes"><div id="screen">LOADING...</div></div>
+<audio id="mp3player" preload="auto"></audio>
 <script>
-// --- AUDIO ENGINE - 40 FREE CC0 TRACKS ---
-const audioCtx=new (window.AudioContext||window.webkitAudioContext)();
-function beep(f,d,t='square',v=0.14){try{const o=audioCtx.createOscillator(),g=audioCtx.createGain();o.type=t;o.frequency.value=f;g.gain.value=v;o.connect(g);g.connect(audioCtx.destination);o.start();setTimeout(()=>o.stop(),d)}catch(e){}}
+// --- AUDIO ---
+let audioCtx;
+function ensureAudio(){ if(!audioCtx) audioCtx=new (window.AudioContext||window.webkitAudioContext)(); if(audioCtx.state==='suspended') audioCtx.resume(); }
+function beep(f,d,t='square',v=0.14){ try{ensureAudio(); const o=audioCtx.createOscillator(),g=audioCtx.createGain(); o.type=t; o.frequency.value=f; g.gain.value=v; o.connect(g); g.connect(audioCtx.destination); o.start(); setTimeout(()=>o.stop(),d);}catch(e){} }
+
 let musicInt=null, curTrack=0;
-const FREE_TRACKS=[ // all original CC0 - dramatic sci-fi 8-bit
+const FREE_TRACKS=[
 {name:"00 TITLE - TARTARIA DAWN",notes:[262,330,392,523,392,330,262,196],bpm:220},
 {name:"01 NEON RUINS",notes:[220,262,330,262,220,196,220,330],bpm:200},
-{name:"02 AUTHORITY SPIRE",notes:[110,130,165,130,110,98,110,165],bpm:180},
+{name:"02 SPIRE",notes:[110,130,165,130,110,98,110,165],bpm:180},
 {name:"03 UNDERGROUND HUM",notes:[65,78,98,78,65,62,65,98],bpm:160},
 {name:"04 AI AWAKENS",notes:[440,523,659,523,440,392,440,659],bpm:210},
 {name:"05 TIME SLIP",notes:[330,370,415,370,330,294,330,415],bpm:230},
 {name:"06 SPACE LAUNCH",notes:[196,246,294,392,294,246,196,294],bpm:240},
 {name:"07 DIM CROSS",notes:[185,220,277,220,185,165,185,277],bpm:190},
-{name:"08 MARKED PATROL",notes:[110,110,130,110,110,98,110,130],bpm:170},
+{name:"08 PATROL",notes:[110,110,130,110,110,98,110,130],bpm:170},
 {name:"09 FREE SOULS",notes:[262,294,330,294,262,247,262,330],bpm:200},
 {name:"10 CRYSTAL CAVERN",notes:[523,659,783,659,523,493,523,659],bpm:180},
-{name:"11 ANCIENT VESSEL",notes:[130,165,196,165,130,123,130,196],bpm:200},
+{name:"11 VESSEL",notes:[130,165,196,165,130,123,130,196],bpm:200},
 {name:"12 STAR ALLIES",notes:[330,392,493,392,330,311,330,493],bpm:220},
 {name:"13 VOID ECHO",notes:[55,65,82,65,55,51,55,82],bpm:150},
-{name:"14 TARTARIA LOST",notes:[220,246,277,246,220,207,220,277],bpm:190},
+{name:"14 LOST CITY",notes:[220,246,277,246,220,207,220,277],bpm:190},
 {name:"15 REBELLION",notes:[147,185,220,185,147,139,147,220],bpm:210},
 {name:"16 STEALTH",notes:[98,98,110,98,98,92,98,110],bpm:160},
-{name:"17 HANGAR BAY",notes:[65,82,98,82,65,61,65,98],bpm:170},
+{name:"17 HANGAR",notes:[65,82,98,82,65,61,65,98],bpm:170},
 {name:"18 SUN BENEATH SEA",notes:[262,330,392,330,262,294,330,392],bpm:180},
 {name:"19 COMPLIANCE FALLS",notes:[392,493,587,493,392,370,392,587],bpm:230},
-{name:"20-40 MORE DRAMA",notes:[130,155,185,155,130,116,130,185],bpm:200},
 ];
-// generate 20 more variations to hit 40
-for(let i=21;i<=40;i++){FREE_TRACKS.push({name:(i<10?"0":"")+i+" DEEP SECTOR "+i,notes:[110+(i*2),130+(i*2),165+(i*2),196+(i*2),165+(i*2),130+(i*2),110+(i*2),98+(i*2)],bpm:180+i})}
-
 function playTrack(n){
   clearInterval(musicInt); curTrack=n%FREE_TRACKS.length;
   let t=FREE_TRACKS[curTrack], idx=0;
-  document.getElementById('trackLabel').textContent=t.name;
-  musicInt=setInterval(()=>{
-    beep(t.notes[idx%t.notes.length], t.bpm/2, idx%4==0?'square':'triangle', idx%4==0?0.16:0.09);
-    idx++;
-  }, t.bpm);
+  const lab=document.getElementById('trackLabel'); if(lab) lab.textContent="♪ "+t.name;
+  musicInt=setInterval(()=>{ beep(t.notes[idx%t.notes.length], t.bpm/2.2, idx%4==0?'square':'triangle', idx%4==0?0.15:0.08); idx++; }, t.bpm);
 }
-function nextTrack(){playTrack(curTrack+1)}
+function nextTrack(){ playTrack(curTrack+1); }
 
-// --- FIXED VOICE SYSTEM ---
+// --- FREE MP3s - Pixabay Content License - free commercial no attribution ---
+const MP3_TRACKS=[
+"https://cdn.pixabay.com/download/audio/2022/03/15/audio_c8c8e8c5a3.mp3",
+"https://cdn.pixabay.com/download/audio/2021/08/04/audio_12b0c7443c.mp3",
+"https://cdn.pixabay.com/download/audio/2022/03/10/audio_24f0b90e18.mp3",
+"https://cdn.pixabay.com/download/audio/2022/03/10/audio_49a54d836e.mp3",
+"https://cdn.pixabay.com/download/audio/2021/08/09/audio_42c2ce9d86.mp3",
+"https://cdn.pixabay.com/download/audio/2022/03/09/audio_c01cc7a963.mp3",
+"https://cdn.pixabay.com/download/audio/2022/03/15/audio_3a9f6dbaf0.mp3",
+"https://cdn.pixabay.com/download/audio/2022/01/07/audio_c4039878e4.mp3",
+"https://cdn.pixabay.com/download/audio/2022/01/18/audio_7cc04957e7.mp3",
+"https://cdn.pixabay.com/download/audio/2021/08/09/audio_9788fd890e.mp3",
+"https://cdn.pixabay.com/download/audio/2022/03/14/audio_0c050ecc4b.mp3",
+"https://cdn.pixabay.com/download/audio/2021/10/07/audio_ec0c7d8a9c.mp3"
+];
+let mp3Idx=0;
+function playMp3(i){
+  const p=document.getElementById('mp3player');
+  mp3Idx=i%MP3_TRACKS.length;
+  p.src=MP3_TRACKS;
+  p.volume=0.5;
+  p.play().catch(()=>{});
+  const lab=document.getElementById('mp3Label'); if(lab) lab.textContent="MP3 "+(mp3Idx+1)+"/"+MP3_TRACKS.length;
+}
+function nextMp3(){ playMp3(mp3Idx+1); }
+
+// --- VOICE - FIXED ---
 let synth=window.speechSynthesis, voices=[], selectedVoice=null;
-function loadVoices(){voices=synth.getVoices(); if(voices.length>0) {if(document.getElementById('screen').innerHTML.includes('SELECT VOICE')) showVoice();}}
+function loadVoices(){ voices=synth.getVoices(); if(voices.length>0 && document.body.innerHTML.includes('SELECT VOICE')) showVoice(); }
 if(synth.onvoiceschanged!==undefined) synth.onvoiceschanged=loadVoices;
-setTimeout(loadVoices,600);
-function speak(t){if(!synth)return;synth.cancel();let u=new SpeechSynthesisUtterance(t.replace(/<[^>]+>/g,'').slice(0,180));u.rate=0.82;u.pitch=0.88;if(selectedVoice)u.voice=selectedVoice;else if(voices[0])u.voice=voices[0];synth.speak(u);}
+setTimeout(loadVoices,700);
+function speak(t){
+  if(!synth) return;
+  synth.cancel();
+  let u=new SpeechSynthesisUtterance(t.replace(/<[^>]+>/g,'').slice(0,180));
+  u.rate=0.84; u.pitch=0.88;
+  if(selectedVoice) u.voice=selectedVoice;
+  else if(voices[0]) u.voice=voices.find(v=>v.lang.startsWith('en'))||voices[0];
+  synth.speak(u);
+}
 
-// --- GAME ---
-let player=null,current=1;
-const characters=Array.from({length:12},(_,i)=>({name:"HERO "+(i+1),role:["LEADER","SCI","WAR","SCOUT","EX-MARK","MYSTIC","ENG","DIPLO","SMUG","MED","HIST","PILOT"][i]}));
+// --- GAME DATA ---
+let player=null, current=1;
+const characters=[
+{name:"KAEL VOSS",role:"LEADER"},{name:"LIRA VOSS",role:"SCI"},{name:"THORNE",role:"WAR"},{name:"SYLARA",role:"SCOUT"},
+{name:"DRAVEN",role:"EX-MARK"},{name:"NYRA SOL",role:"MYSTIC"},{name:"ROOK",role:"ENG"},{name:"VESPER",role:"DIPLO"},
+{name:"JAX",role:"SMUG"},{name:"ELARA",role:"MED"},{name:"SILAS",role:"HIST"},{name:"ZARA",role:"PILOT"}
+];
 const story={
-1:{text:"[MONO MOVIE]\nTARTARIA // 8-BIT\nSUN BENEATH SEA\n40 FREE TRACKS",img:"https://picsum.photos/id/1015/256/48",choices:[{text:"START",next:10}]},
-10:{text:"RUINS. SPIRE FAR.",choices:[{text:"GO UNDERGROUND",next:70}]},
-70:{text:"UNDERGROUND CITY\nAI VESSELS\nTIME/SPACE/DIM",img:"https://picsum.photos/id/1016/256/48",choices:[{text:"BOARD VESSEL",next:100}]},
-100:{text:"VESSEL ONLINE\nTIME/SPACE/DIM",choices:[{text:"TIME",next:150},{text:"SPACE",next:160},{text:"DIM",next:170},{text:"FREE TARTARIA",next:180}]},
-150:{text:"TIME VICTORY",choices:[{text:"AGAIN",next:1}]},160:{text:"SPACE VICTORY",choices:[{text:"AGAIN",next:1}]},170:{text:"DIM VICTORY",choices:[{text:"AGAIN",next:1}]},180:{text:"ULTIMATE VICTORY",choices:[{text:"AGAIN",next:1}]},
+1:{text:"TARTARIA // LOST SECTOR\nSUN BENEATH SEA PULSING...\nMONOCHROME 8-BIT SCI-FI\n[Fiction - Dramatic Title]",choices:[{text:"[VIEW TITLE MOVIE]",next:2}]},
+2:{text:"TITLE MOVIE: Towers of Tartaria rise through static. A white sun flickers BELOW the black sea. Authority spires scan.",choices:[{text:"BEGIN ESCAPE",next:10}]},
+10:{text:"RUINS EDGE. Authority spire 2km. Patrols. You are unmarked. 12 heroes ready.",choices:[{text:"STEALTH THROUGH RUINS",next:20},{text:"FIND SURVIVORS",next:30},{text:"TO SPIRE",next:40}]},
+20:{text:"You ghost through ruins. You hear patrol: 'Deep buried city still powered.'",choices:[{text:"GO UNDERGROUND",next:70}]},
+30:{text:"Basement survivors: 'Tunnels older than history. They built ships before species.'",choices:[{text:"ASK ABOUT UNDERGROUND",next:70}]},
+40:{text:"Spire looms. Guards everywhere. You find service hatch.",choices:[{text:"ENTER HATCH",next:70}]},
+70:{text:"UNDERGROUND CITY FOUND. White crystals humming. Ancient machines in mono hangar.",choices:[{text:"CENTRAL CHAMBER",next:80},{text:"VEHICLE BAY",next:85}]},
+80:{text:"Central chamber: AI vessels float. Text on wall: PRE-DATE SPECIES. TIME/SPACE/DIMENSION",choices:[{text:"BOARD VESSEL",next:100}]},
+85:{text:"Hangar: Vessel says: TIME SPACE OPEN. Ready.",choices:[{text:"ACTIVATE",next:100}]},
+100:{text:"VESSEL ONLINE. Modes: TIME / SPACE / DIMENSION / RETURN TO FREE TARTARIA",choices:[{text:"TIME TRAVEL",next:110},{text:"SPACE LAUNCH",next:120},{text:"DIMENSION CROSS",next:130},{text:"RETURN AND FREE TARTARIA",next:140}]},
+110:{text:"TIME CURRENT SLIPS. You see founding of spire.",choices:[{text:"ALTER PAST",next:150}]},
+120:{text:"SPACE LAUNCH. Stars in mono. You find allies.",choices:[{text:"CALL ALLIES",next:160}]},
+130:{text:"DIM THINS. Free dimension visible.",choices:[{text:"ENTER FREE DIM",next:170}]},
+140:{text:"RETURN WITH TECH. People gather.",choices:[{text:"FINAL LIBERATION",next:180}]},
+150:{text:"=== TIME VICTORY ===\nYou prevent the Mark. Tartaria stays free.\nMONO 8-BIT END",choices:[{text:"PLAY AGAIN",next:1}]},
+160:{text:"=== SPACE VICTORY ===\nAllies arrive. Spire falls from orbit.\nMONO 8-BIT END",choices:[{text:"PLAY AGAIN",next:1}]},
+170:{text:"=== DIMENSION VICTORY ===\nYou pull Tartaria into free dimension.\nMONO 8-BIT END",choices:[{text:"PLAY AGAIN",next:1}]},
+180:{text:"=== ULTIMATE VICTORY ===\nTARTARIA FREE. Sun beneath sea rises.\nTHANK YOU FOR PLAYING",choices:[{text:"PLAY AGAIN",next:1}]},
 };
 
 function showChars(){
- let h=`<h1>ESCAPE FROM TARTARIA</h1><div id="trackLabel" style="font-size:6px;border:1px solid #fff;padding:2px;margin:2px 0">TRACK: ${FREE_TRACKS[0].name}</div><div style="display:flex;gap:2px"><button onclick="playTrack(0)" style="font-size:6px">TITLE THEME</button><button onclick="nextTrack()" style="font-size:6px">NEXT TRACK [${FREE_TRACKS.length}]</button></div><div class="char-grid">`;
- characters.forEach((c,i)=>{h+=`<div class="char-card"><div>◬</div><button onclick="selectChar(${i})">${c.name}<br>${c.role}</button></div>`});
- h+=`</div>`;document.getElementById('screen').innerHTML=h; playTrack(0);
+  let h=`<h1>ESCAPE FROM TARTARIA</h1><canvas id="titleCanvas"></canvas><div id="trackLabel" class="small">♪ ${FREE_TRACKS[0].name}</div><div id="mp3Label" class="small">MP3 FREE - READY</div><div style="display:flex;gap:2px"><button onclick="playTrack(0);ensureAudio()" style="font-size:6px">PLAY TITLE THEME</button><button onclick="nextTrack()" style="font-size:6px">NEXT 8BIT</button><button onclick="playMp3(0)" style="font-size:6px">PLAY MP3</button><button onclick="nextMp3()" style="font-size:6px">NEXT MP3</button></div><div class="char-grid">`;
+  characters.forEach((c,i)=>{ h+=`<div class="char-card"><div class="pixel">${["◬","◭","◮","◯","⬙","⬟","⬢","⬣","⬔","⬖","⬗","⬘"][i]}</div><button onclick="selectChar(${i})">${c.name}<br>${c.role}</button></div>`; });
+  h+=`</div><div class="small" style="margin-top:4px">MONO 8-BIT SCI-FI // 12 HEROES // FICTION</div>`;
+  document.getElementById('screen').innerHTML=h;
+  drawTitleMovie();
+  playTrack(0);
 }
-window.selectChar=function(i){player=characters[i];beep(800,60);showVoice()}
+function drawTitleMovie(){
+  const c=document.getElementById('titleCanvas'); if(!c) return; const ctx=c.getContext('2d'); c.width=244; c.height=58;
+  let y=40, dir=-1;
+  setInterval(()=>{
+    ctx.fillStyle='#000'; ctx.fillRect(0,0,c.width,c.height);
+    ctx.fillStyle='#fff';
+    // towers
+    for(let x=10;x<240;x+=30){ ctx.fillRect(x,20,8,38); ctx.fillRect(x+2,10,4,12); }
+    // sun beneath sea
+    ctx.beginPath(); ctx.arc(122,y,10,0,Math.PI*2); ctx.fill();
+    ctx.fillRect(0,45,244,2);
+    y+=dir; if(y<30||y>50) dir*=-1;
+  },120);
+}
+window.selectChar=function(i){ player=characters[i]; ensureAudio(); beep(900,60); showVoice(); }
 function showVoice(){
- let h=`<h1>SELECT NARRATOR - FIXED</h1>`;
- if(voices.length===0){h+=`<div style="font-size:7px">Voices loading... Chrome needs a tap</div><button onclick="loadVoices()">RELOAD VOICES</button>`;}
- else voices.slice(0,8).forEach((v,i)=>{h+=`<button onclick="testVoice(${i})">${v.name.slice(0,22)}</button>`});
- h+=`<button onclick="startGame()">[BEGIN + GAME MUSIC]</button><button onclick="nextTrack()">[SKIP MUSIC TRACK]</button>`;
- document.getElementById('screen').innerHTML=h;
+  let h=`<h1>SELECT NARRATOR - FIXED</h1><div class="small">Tap to test - voices now load correctly</div>`;
+  if(voices.length===0){ h+=`<div class="section">Loading voices... Chrome needs 1 sec</div><button onclick="loadVoices()">RELOAD VOICES</button>`; }
+  else { voices.slice(0,8).forEach((v,i)=>{ h+=`<button onclick="testVoice(${i})">${v.name.substring(0,24)} [${v.lang}]</button>`; }); }
+  h+=`<button onclick="startGame()">[BEGIN GAME + GAME MUSIC]</button><div style="display:flex;gap:2px"><button onclick="nextTrack()" style="font-size:6px">NEXT 8BIT TRACK</button><button onclick="nextMp3()" style="font-size:6px">NEXT MP3 TRACK</button></div>`;
+  document.getElementById('screen').innerHTML=h;
 }
-window.testVoice=function(i){if(voices[i]){selectedVoice=voices[i];beep(600,80);speak("Escape from Tartaria. Voice test. Track "+FREE_TRACKS[curTrack].name);}}
-function startGame(){playTrack(1);current=1;render()}
+window.testVoice=function(i){ if(voices[i]){ selectedVoice=voices[i]; ensureAudio(); beep(700,80); speak("Escape from Tartaria. Voice test. Tartaria movie playing."); } }
+function startGame(){ ensureAudio(); playTrack(1); playMp3(1); current=10; render(); }
 function render(){
- let sec=story[current]||story[1];
- let html=`<div class="section">${sec.text}</div>`;
- if(sec.img)html+=`<img class="mono-img" src="${sec.img}">`;
- html+=`<div style="font-size:6px">♪ ${FREE_TRACKS[curTrack].name} <button onclick="nextTrack()" style="font-size:6px;padding:1px">NEXT</button></div>`;
- sec.choices.forEach(c=>{html+=`<button onclick="goTo(${c.next})">> ${c.text}</button>`});
- document.getElementById('screen').innerHTML=html; beep(500,20); speak(sec.text);
+  let sec=story[current]||story[1];
+  let html=`<div class="section">${sec.text}</div>`;
+  html+=`<div class="small" id="trackLabel">♪ ${FREE_TRACKS[curTrack].name}</div><div class="small" id="mp3Label">MP3 ${mp3Idx+1}/${MP3_TRACKS.length}</div>`;
+  html+=`<div style="display:flex;gap:2px"><button onclick="nextTrack()" style="font-size:6px">8BIT</button><button onclick="nextMp3()" style="font-size:6px">MP3</button></div>`;
+  sec.choices.forEach(c=>{ html+=`<button onclick="goTo(${c.next})">> ${c.text}</button>`; });
+  document.getElementById('screen').innerHTML=html;
+  beep(500,20); speak(sec.text);
 }
-window.goTo=function(n){current=n; if(n>=100) playTrack(n%FREE_TRACKS.length); render()}
+window.goTo=function(n){ current=n; if(n>=100) playTrack((n%FREE_TRACKS.length)); render(); }
 
 showChars(); loadVoices();
 </script>

@@ -2,222 +2,149 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>ESCAPE FROM TARTARIA - FF4 SNES</title>
+<title>ESCAPE FROM TARTARIA - CHOOSE YOUR ADVENTURE BOOK</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <link rel="icon" href="data:image/svg+xml,[STRIPPED]">
 <style>
-html,body{margin:0;background:#000;color:#fff;font-family:monospace;height:100%;overflow:hidden}
-body{display:flex;justify-content:center;align-items:center;background:#0a0a20}
-#snes{width:256px;height:240px;background:#000;border:4px solid #fff;position:relative;overflow:hidden;image-rendering:pixelated;box-shadow:0 0 0 4px #000,0 0 0 8px #fff}
-#map{width:100%;height:144px;display:block;image-rendering:pixelated;background:#000}
-#ui{position:absolute;bottom:0;left:0;right:0;height:96px;background:#0000aa;border-top:3px solid #fff;padding:5px;box-sizing:border-box;font-size:8px;line-height:10px;overflow:auto}
-#party{position:absolute;top:0;right:0;width:80px;height:144px;background:rgba(0,0,80,0.92);border-left:2px solid #fff;padding:3px;box-sizing:border-box;font-size:6px}
-#bar{position:absolute;top:0;left:0;right:80px;height:14px;background:#000;border-bottom:2px solid #fff;font-size:6px;padding:2px;box-sizing:border-box}
-button{width:100%;background:#0000aa;color:#fff;border:2px solid #fff;font-family:monospace;font-size:7px;padding:4px;margin:1px 0;text-align:left;cursor:pointer}
-button:hover,button:focus{background:#fff;color:#0000aa;outline:none}
-.sel{background:#fff!important;color:#0000aa!important}
-.hp{color:#ff7777}.mp{color:#77ff77}
-@media(min-width:520px){#snes{transform:scale(2.2)}} @media(min-width:900px){#snes{transform:scale(3)}}
+html,body{margin:0;background:#0f0f1a;color:#fff;font-family:monospace;height:100%;overflow:hidden}
+body{display:flex;justify-content:center;align-items:center}
+#book{width:256px;height:240px;background:#f5f0d0;color:#000;border:4px solid #fff;position:relative;box-shadow:0 0 0 4px #000,0 0 0 8px #fff;display:flex;flex-direction:column}
+#header{height:18px;background:#000;color:#fff;font-size:7px;padding:3px;box-sizing:border-box;display:flex;justify-content:space-between}
+#page{flex:1;padding:8px;overflow:auto;font-size:8px;line-height:11px;white-space:pre-wrap;background:#f5f0d0;color:#000}
+#choices{padding:4px;background:#000;display:flex;flex-direction:column;gap:2px;min-height:70px}
+.choice{width:100%;background:#000;color:#fff;border:2px solid #fff;font-family:monospace;font-size:7px;padding:5px;text-align:left;cursor:pointer}
+.choice:hover,.choice.sel{background:#fff;color:#000}
+#controls{height:14px;background:#000;color:#fff;font-size:6px;padding:2px;display:flex;justify-content:space-between}
+button.small{width:auto;padding:2px 4px;font-size:6px;border:1px solid #fff}
+@media(min-width:520px){#book{transform:scale(2.2)}} @media(min-width:900px){#book{transform:scale(3)}}
 </style>
 </head>
 <body>
-<div id="snes">
-<canvas id="map" width="256" height="144"></canvas>
-<div id="bar">FF4 STYLE | TARTARIA</div>
-<div id="party"></div>
-<div id="ui">LOADING FF4 BUILD...</div>
+<div id="book">
+<div id="header"><span id="hTitle">TARTARIA BOOK</span><span id="hPage">P 1</span></div>
+<div id="page">Loading book...</div>
+<div id="choices"></div>
+<div id="controls"><span>♪ AUTO | A=OK B=Back</span><span><button class="small" onclick="toggleRead()">🔊 AUTO-READ ON</button> <button class="small" onclick="nextTrack()">♪</button></span></div>
 </div>
 <audio id="music" loop preload="auto"></audio>
 <script>
-// --- AUTO MP3 - FREE Pixabay License ---
+// --- AUTO MP3 BOOK MUSIC ---
 const MP3={
  title:"https://cdn.pixabay.com/download/audio/2022/03/15/audio_3a9f6dbaf0.mp3",
- over:"https://cdn.pixabay.com/download/audio/2022/03/15/audio_c8c8e8c5a3.mp3",
- town:"https://cdn.pixabay.com/download/audio/2022/03/10/audio_24f0b90e18.mp3",
- dungeon:"https://cdn.pixabay.com/download/audio/2022/03/09/audio_c01cc7a963.mp3",
+ ruins:"https://cdn.pixabay.com/download/audio/2022/03/15/audio_c8c8e8c5a3.mp3",
+ underground:"https://cdn.pixabay.com/download/audio/2022/03/09/audio_c01cc7a963.mp3",
+ vessel:"https://cdn.pixabay.com/download/audio/2022/03/10/audio_24f0b90e18.mp3",
  battle:"https://cdn.pixabay.com/download/audio/2022/01/18/audio_7cc04957e7.mp3",
- boss:"https://cdn.pixabay.com/download/audio/2021/10/07/audio_ec0c7d8a9c.mp3",
- win:"https://cdn.pixabay.com/download/audio/2022/03/10/audio_49a54d836e.mp3"
+ victory:"https://cdn.pixabay.com/download/audio/2022/03/10/audio_49a54d836e.mp3"
 };
-let curM=null,mOn=false;
-function playM(k){ if(curM===k) return; curM=k; const a=document.getElementById('music'); a.src=MP3[k]; a.volume=0.5; if(mOn) a.play().catch(()=>{}); document.getElementById('bar').textContent="♪ "+k.toUpperCase()+" AUTO | FF4 TARTARIA"; }
-function unlock(){ mOn=true; document.getElementById('music').play().catch(()=>{}); }
+let curM=null,mOn=false, mIdx=0;
+const mKeys=Object.keys(MP3);
+function playM(k){ if(curM===k) return; curM=k; const a=document.getElementById('music'); a.src=MP3[k]; a.volume=0.4; if(mOn) a.play().catch(()=>{}); }
+function nextTrack(){ mIdx=(mIdx+1)%mKeys.length; playM(mKeys[mIdx]); }
+function unlockM(){ if(!mOn){ mOn=true; document.getElementById('music').play().catch(()=>{}); } }
 
-// --- CONTROLLER ---
-let pad=null; window.addEventListener("gamepadconnected",e=>{pad=e.gamepad.index;}); window.addEventListener("gamepaddisconnected",()=>{pad=null;});
-let last=[];
-function poll(){
- if(pad!==null){
-  const g=navigator.getGamepads()[pad];
-  if(g){
-   if(g.buttons[12]?.pressed &&!last[12]) move(0,-1);
-   if(g.buttons[13]?.pressed &&!last[13]) move(0,1);
-   if(g.buttons[14]?.pressed &&!last[14]) move(-1,0);
-   if(g.buttons[15]?.pressed &&!last[15]) move(1,0);
-   if(g.buttons[0]?.pressed &&!last[0]) confirm();
-   if(g.buttons[1]?.pressed &&!last[1]) cancel();
-   last=g.buttons.map(b=>b.pressed);
-  }
- }
- requestAnimationFrame(poll);
+// --- AUTO-READ (FIXED VOICES) ---
+let synth=window.speechSynthesis, voices=[], autoRead=true, reading=false;
+function loadVoices(){ voices=synth.getVoices(); }
+if(synth.onvoiceschanged!==undefined) synth.onvoiceschanged=loadVoices;
+setTimeout(loadVoices,600);
+function speakBook(t){
+ if(!autoRead) return;
+ synth.cancel();
+ let u=new SpeechSynthesisUtterance(t.slice(0,400));
+ u.rate=0.9; u.pitch=0.95;
+ if(voices.length) u.voice=voices.find(v=>v.lang.startsWith('en'))||voices[0];
+ synth.speak(u);
 }
-poll();
+function toggleRead(){ autoRead=!autoRead; document.querySelector('#controls button').textContent=autoRead?'🔊 AUTO-READ ON':'🔇 AUTO-READ OFF'; if(!autoRead) synth.cancel(); }
 
-// --- FF4 CORE ---
-const cvs=document.getElementById('map'),ctx=cvs.getContext('2d');
-const ui=document.getElementById('ui'), pDiv=document.getElementById('party');
+// --- BOOK DATA - 22 PAGES ---
+const BOOK={
+1:{title:"COVER",music:"title",text:"ESCAPE FROM TARTARIA\nA Choose Your Own Adventure Book\n\nThe sun beneath the sea still pulses.\nAuthority says Tartaria never existed.\nYou know better.\n\nBy Jon Lanham - Fiction\n\nPress A / Click to open.",choices:[{text:"OPEN BOOK",next:2}]},
+2:{title:"PAGE 1 - RUINS",music:"ruins",text:"Page 1 - The Ruins Edge\n\nYou stand at the edge of the white ruins. The Authority Spire hums 2km away, scanning.\nYour scanner shows a heat signature below - older than the Spire.\n\nAn old survivor whispers: 'They built a city beneath before we had language.'",choices:[{text:"Go stealth through ruins",next:3},{text:"Talk to survivor",next:4},{text:"Run straight to Spire",next:5}]},
+3:{title:"PAGE 2 - GHOST",music:"ruins",text:"Page 2 - Ghost Through Ruins\n\nYou move like a shadow. Patrol drones pass overhead.\nYou hear their chatter: 'Deep city still powered. Do not enter.'\n\nYou find a cracked stairwell going down, light pulsing white.",choices:[{text:"Descend the stairwell",next:6},{text:"Hide and listen more",next:4}]},
+4:{title:"PAGE 3 - SURVIVOR",music:"ruins",text:"Page 3 - The Survivor\n\n'Tunnels are not tunnels,' she says. 'They are roots of a machine. Before species, they left vessels that can fold time, space, dimension.'\n\nShe presses a cold crystal into your hand. It hums.",choices:[{text:"Take crystal and go underground",next:6},{text:"Ask about vessels",next:7}]},
+5:{title:"PAGE 4 - SPIRE",music:"battle",text:"Page 4 - Authority Spire\n\nGuards. Too many. A service hatch hisses open behind you - someone left it for you.\n\nInside, pipes lead down.",choices:[{text:"Enter hatch",next:6},{text:"Surrender and bluff",next:8}]},
+6:{title:"PAGE 5 - UNDERGROUND",music:"underground",text:"Page 5 - Underground City Found\n\nWhite crystals light a city larger than any on surface. Silent machines float. In the hangar, three vessels sleep.\n\nA wall reads: WE LEFT BEFORE SPECIES. TIME SPACE DIMENSION OPEN.",choices:[{text:"Go to Central Chamber",next:9},{text:"Go to Vehicle Bay",next:10}]},
+7:{title:"PAGE 6 - VESSELS",music:"underground",text:"Page 6 - The Vessels\n\n'Time vessel can prevent the Mark. Space vessel can call our star allies. Dimension vessel can pull us into a free dimension,' she says.\n\n'Which would you choose?'",choices:[{text:"I need to see them first",next:6}]},
+8:{title:"PAGE 7 - CAPTURED",music:"battle",text:"Page 7 - Captured\n\nThey mark you. But the crystal in your pocket burns - it teleports you down anyway. You wake in the crystal city, free of the mark.",choices:[{text:"Stand up",next:6}]},
+9:{title:"PAGE 8 - CHAMBER",music:"underground",text:"Page 8 - Central Chamber\n\nA floating AI speaks without sound: 'You are unmarked. You may board. Choose: Time will change past. Space will call future. Dimension will change now.'",choices:[{text:"Board vessel",next:11}]},
+10:{title:"PAGE 9 - BAY",music:"underground",text:"Page 9 - Vehicle Bay\n\nVessel opens like a hand. Inside, no controls - only intention. It asks where you want Tartaria to be free.",choices:[{text:"Enter vessel",next:11}]},
+11:{title:"PAGE 10 - CHOICE",music:"vessel",text:"Page 10 - The Choice\n\nThe vessel is online. This is the heart of the book.\n\nTIME: Go back and stop Authority before it starts.\nSPACE: Launch and bring star allies.\nDIMENSION: Thin the veil and shift Tartaria into a free dimension.\nRETURN: Take this tech back and free Tartaria now.",choices:[{text:"TIME TRAVEL",next:12},{text:"SPACE LAUNCH",next:13},{text:"DIMENSION CROSS",next:14},{text:"RETURN AND FREE TARTARIA",next:15}]},
+12:{title:"PAGE 11 - TIME",music:"vessel",text:"Page 11 - Time\n\nYou slip before the Spire was built. You leave the crystal in the foundation - it grows into a flaw. History cracks.\n\nYou wake. Tartaria never fell.",choices:[{text:"Read ending",next:16}]},
+13:{title:"PAGE 12 - SPACE",music:"vessel",text:"Page 12 - Space\n\nYou launch. Stars you never saw. You broadcast the crystal frequency.\n\nLights answer - thousands. They have been waiting.",choices:[{text:"Read ending",next:17}]},
+14:{title:"PAGE 13 - DIMENSION",music:"vessel",text:"Page 13 - Dimension\n\nYou thin the world like paper. On the other side, Tartaria is free - towers white, sun beneath sea bright, no Spire.",choices:[{text:"Pull Tartaria through",next:18}]},
+15:{title:"PAGE 14 - RETURN",music:"vessel",text:"Page 14 - Return\n\nYou return with a vessel in your pocket that builds vessels. People gather. For the first time, they see the Spire as small.",choices:[{text:"Final liberation",next:19}]},
+16:{title:"ENDING - TIME",music:"victory",text:"ENDING 1: TIME VICTORY\n\nTartaria free in the past, so free in the present.\nChildren learn true history.\nThe sun beneath the sea rises.\n\n[Press A to read again]",choices:[{text:"READ AGAIN FROM START",next:1}]},
+17:{title:"ENDING - SPACE",music:"victory",text:"ENDING 2: SPACE VICTORY\n\nAllies arrive in white ships. Spire falls from orbit.\nTartaria joins a free federation of worlds.\n\n[Press A to read again]",choices:[{text:"READ AGAIN FROM START",next:1}]},
+18:{title:"ENDING - DIMENSION",music:"victory",text:"ENDING 3: DIMENSION VICTORY\n\nYou pull Tartaria into the free dimension.\nNo Authority. Only crystal cities.\n\n[Press A to read again]",choices:[{text:"READ AGAIN FROM START",next:1}]},
+19:{title:"ENDING - ULTIMATE",music:"victory",text:"ENDING 4: ULTIMATE VICTORY\n\nYou free Tartaria with its own forgotten tech.\nPeople remember who built the world.\nSun beneath sea becomes sun above.\n\nThank you for reading.\nBy Jon Lanham\n\n[Press A to read again]",choices:[{text:"READ AGAIN FROM START",next:1}]},
+};
 
-const HEROES=[
-{name:"CECIL",role:"LEADER",hp:120,mx:120,mp:30,mxmp:30,atk:16,def:10,spd:12,color:"#88f"},
-{name:"LIRA",role:"WHITE MAGE",hp:70,mx:70,mp:60,mxmp:60,atk:8,def:6,spd:14,color:"#faf"},
-{name:"THORNE",role:"MONK",hp:140,mx:140,mp:10,mxmp:10,atk:20,def:12,spd:10,color:"#fa8"},
-{name:"SYLARA",role:"NINJA",hp:85,mx:85,mp:20,mxmp:20,atk:15,def:7,spd:18,color:"#8fa"},
-{name:"DRAVEN",role:"DARK KNT",hp:110,mx:110,mp:15,mxmp:15,atk:18,def:11,spd:11,color:"#f88"},
-{name:"NYRA",role:"BLACK MAGE",hp:60,mx:60,mp:70,mxmp:70,atk:7,def:4,spd:13,color:"#f8f"},
-{name:"ROOK",role:"ENGINEER",hp:90,mx:90,mp:25,mxmp:25,atk:13,def:9,spd:12,color:"#aaa"},
-{name:"ZARA",role:"DRAGOON",hp:100,mx:100,mp:20,mxmp:20,atk:17,def:9,spd:15,color:"#aaf"}
-];
+let curPage=1, choiceSel=0;
 
-// FIXED 16x12 MAPS - ALL ROWS SAME LENGTH
-const OVER=[
-[1,1,1,1,1,1,1,1],
-[1,0,0,0,0,0,0,0,0,2,0,0,0,0,0,1],
-[1,0,1,1,0,1,1,1,0,1,0,1],
-[1,0,1,0,0,1,0,0,0,1,0,1],
-[1,0,0,0,1,1,0,1,0,0,0,1,0,0,0,1],
-[1,1,0,1,1,3,0,1,0,1,0,1],
-[1,0,0,0,0,0,0,1,0,2,0,0,0,1,0,1],
-[1,0,1,1,1,1,0,1,0,1,0,1],
-[1,0,0,2,0,0,0,0,0,0,0,1,0,0,0,1],
-[1,1,1,0,1,1,1,1,1,1,0,1,1,1,0,1],
-[1,0,0,0,0,0,4,1],
-[1,1,1,1,1,1,1,1]
-];
-const DUNG=[
-[1,1,1,1,1,1,1,1],
-[1,0,0,0,1,0,0,0,0,0,1,0,0,0,0,1],
-[1,0,1,0,1,0,1,1,1,0,1,0,1,1,0,1],
-[1,0,1,0,0,0,0,5,0,0,0,0,0,1,0,1],
-[1,0,1,1,1,1,0,1,1,1,1,1,0,1,0,1],
-[1,0,0,0,0,0,0,1,0,2,0,0,0,0,0,1],
-[1,1,1,1,1,1,0,1,0,1,0,1,1,1,0,1],
-[1,0,0,0,0,1,0,0,0,0,0,1,0,0,0,1],
-[1,0,1,1,0,1,1,1,0,1,0,1],
-[1,0,0,0,0,0,0,0,0,1,0,0,0,1,0,1],
-[1,0,1,1,1,1,1,1,0,1,0,1,1,1,0,1],
-[1,1,1,1,1,1,1,1]
-];
-let map=OVER, px=1, py=1, state='TITLE', party=[], sel=0;
-
-function draw(){
- ctx.fillStyle='#000020'; ctx.fillRect(0,0,256,144);
- for(let y=0;y<12;y++) for(let x=0;x<16;x++){
-  let t=map[y][x];
-  if(t===1){ ctx.fillStyle='#202060'; ctx.fillRect(x*16,y*12,16,12); ctx.fillStyle='#404080'; ctx.fillRect(x*16+1,y*12+1,14,2); }
-  if(t===0){ ctx.fillStyle='#000010'; ctx.fillRect(x*16,y*12,16,12); }
-  if(t===2){ ctx.fillStyle='#004000'; ctx.fillRect(x*16,y*12,16,12); ctx.fillStyle='#8f8'; ctx.fillRect(x*16+4,y*12+2,8,8); }
-  if(t===3){ ctx.fillStyle='#400000'; ctx.fillRect(x*16,y*12,16,12); ctx.fillStyle='#f88'; ctx.fillRect(x*16+6,y*12,4,12); }
-  if(t===4){ ctx.fillStyle='#404000'; ctx.fillRect(x*16,y*12,16,12); ctx.fillStyle='#ff0'; ctx.fillRect(x*16+2,y*12+2,12,8); }
-  if(t===5){ ctx.fillStyle='#303060'; ctx.fillRect(x*16,y*12,16,12); ctx.fillStyle='#fff'; ctx.fillRect(x*16+3,y*12+3,10,6); }
- }
- ctx.fillStyle='#ff0'; ctx.fillRect(px*16+4,py*12+2,8,8); ctx.fillStyle='#000'; ctx.fillRect(px*16+6,py*12+3,4,2);
- drawParty();
-}
-function drawParty(){
- let h=''; party.forEach((p,i)=>{
-  let atb=Math.floor((p.atb||0));
-  h+=`<div class="${i===sel?'sel':''}">${p.name} ${p.role}<br><span class="hp">HP${p.hp}/${p.mx}</span> <span class="mp">MP${p.mp}</span><br>ATB <span style="display:inline-block;width:40px;height:4px;background:#333"><span style="display:block;width:${atb}%;height:100%;background:#0f0"></span></span></div>`;
+function showPage(id){
+ curPage=id;
+ let p=BOOK[id];
+ if(!p) return;
+ document.getElementById('hTitle').textContent=p.title;
+ document.getElementById('hPage').textContent="P "+id;
+ document.getElementById('page').textContent=p.text;
+ playM(p.music);
+ speakBook(p.text);
+ // choices clickable
+ const cDiv=document.getElementById('choices');
+ cDiv.innerHTML='';
+ choiceSel=0;
+ p.choices.forEach((c,i)=>{
+  let b=document.createElement('button');
+  b.className='choice'+(i===0?' sel':'');
+  b.textContent=(i+1)+". "+c.text;
+  b.onclick=()=>{ unlockM(); showPage(c.next); };
+  cDiv.appendChild(b);
  });
- pDiv.innerHTML=h;
-}
-function say(t,opts){
- ui.innerHTML=t.replace(/\n/g,'<br>');
- if(opts){ opts.forEach(o=>{ let b=document.createElement('button'); b.textContent=o.l; b.onclick=()=>{ unlock(); o.f(); }; ui.appendChild(b); }); }
 }
 
-function move(dx,dy){
- if(state!=='OVER'&&state!=='DUNGE') return;
- let nx=px+dx, ny=py+dy;
- if(ny<0||ny>=12||nx<0||nx>=16) return;
- if(map[ny][nx]===1) return;
- px=nx; py=ny; draw();
- let tile=map[py][px];
- if(tile===2){ state='TOWN'; playM('town'); say("TOWN: Survivor elder:\n'Underground city still powers vessels.'\nYour party is healed!",[{l:"LEAVE",f:()=>{ party.forEach(p=>{p.hp=p.mx;p.mp=p.mxmp;}); state=map===OVER?'OVER':'DUNGE'; playM(map===OVER?'over':'dungeon'); draw(); say("D-Pad to move. Find hatch ▼"); }}]); }
- if(tile===3){ map=DUNG; px=1; py=1; state='DUNGE'; playM('dungeon'); draw(); say("UNDERGROUND CITY - FF4 Sealed Cave\nWhite vessel at center.",[{l:"OK",f:()=>say("Find the white vessel [5].")} ]); }
- if(tile===5){ state='VESSEL'; playM('town'); say("VESSEL: FF4 Lunar Whale style\nTime / Space / Dimension",[
-  {l:"TIME - Prevent Authority",f:()=>end("TIME")},
-  {l:"SPACE - Call Allies",f:()=>end("SPACE")},
-  {l:"DIMENSION - Shift World",f:()=>end("DIMENSION")},
-  {l:"FREE TARTARIA NOW",f:()=>end("ULTIMATE")}
- ]); }
- if(tile===4){ battle(true); }
- if(map===OVER && Math.random()<0.11) battle(false);
+function moveChoice(d){
+ const btns=document.querySelectorAll('.choice');
+ if(btns.length===0) return;
+ btns[choiceSel].classList.remove('sel');
+ choiceSel=(choiceSel+d+btns.length)%btns.length;
+ btns[choiceSel].classList.add('sel');
+}
+function confirmChoice(){
+ const btns=document.querySelectorAll('.choice');
+ if(btns[choiceSel]) btns[choiceSel].click();
 }
 
-let bEn=[], bSel=0, bATB=[];
-function battle(isBoss){
- state='BATTLE'; playM(isBoss?'boss':'battle');
- bEn=isBoss?[{name:"AUTHORITY PRIME",hp:200,mx:200,atk:18}]:[{name:"MARKED",hp:45,mx:45,atk:10},{name:"DRONE",hp:30,mx:30,atk:8}];
- bSel=0; bATB=party.map(()=>0);
- let tick=setInterval(()=>{
-  if(state!=='BATTLE'){ clearInterval(tick); return; }
-  party.forEach((p,i)=>{ bATB[i]=Math.min(100,(bATB[i]||0)+p.spd*0.25); });
-  draw(); drawBattle();
- },100);
- drawBattle();
-}
-function drawBattle(){
- let t=`BATTLE! FF4 ATB\n`;
- bEn.forEach((e,i)=>{ t+=`${i===bSel?'▶':''}${e.name} HP${e.hp}/${e.mx}\n`; });
- t+=`\nParty:\n`;
- party.forEach((p,i)=>{ t+=`${i===sel?'▶':''}${p.name} ATB ${Math.floor(bATB[i]||0)}%\n`; });
- say(t,[
-  {l:"ATTACK",f:()=>{ if((bATB[sel]||0)<100){ say("ATB not ready!"); return; } bATB[sel]=0; let d=party[sel].atk+Math.floor(Math.random()*6); bEn[bSel].hp-=d; if(bEn[bSel].hp<=0){ bEn.splice(bSel,1); if(bEn.length===0) winB(); else say(`Dealt ${d}!`); } else say(`Dealt ${d} to ${bEn[bSel].name}`); }},
-  {l:"MAGIC CURE -5MP",f:()=>{ if(party[sel].mp<5){ say("No MP!"); return; } if((bATB[sel]||0)<100){ say("ATB not ready!"); return; } bATB[sel]=0; party[sel].mp-=5; party.forEach(p=>p.hp=Math.min(p.mx,p.hp+20)); drawParty(); say("CURE! Party healed 20!"); }},
-  {l:"NEXT TARGET",f:()=>{ bSel=(bSel+1)%bEn.length; drawBattle(); }},
-  {l:"DEFEND",f:()=>{ bATB[sel]=0; party[sel].def+=2; say(`${party[sel].name} defends!`); }}
- ]);
-}
-function winB(){
- state=map===OVER?'OVER':'DUNGE'; playM(map===OVER?'over':'dungeon');
- draw(); say("Victory! +EXP\nContinue exploring.",[{l:"OK",f:()=>{}}]);
-}
-function end(type){
- state='END'; playM('win');
- say(`=== ${type} VICTORY ===\nLike FF4 ending - Tartaria free!\nSun beneath sea rises.\n\nThis was fun like FF4 should be!\n\nA to replay.`,[{l:"PLAY AGAIN",f:()=>location.reload()}]);
-}
-function confirm(){ let b=ui.querySelector('button'); if(b) b.click(); }
-function cancel(){ if(state==='TOWN'||state==='DUNGE'){ state=map===OVER?'OVER':'DUNGE'; playM(map===OVER?'over':'dungeon'); draw(); say("Back."); } }
-
-function title(){
- state='TITLE'; map=OVER; px=1; py=1; draw(); playM('title');
- say("ESCAPE FROM TARTARIA\nFF4 SNES STYLE - FUN\nChrono Trigger time + FF4 ATB\nEarthBound heart\n\nA/Enter to start\nD-Pad/WASD move",[{l:"START - PICK 4 HEROES FF4 STYLE",f:pick}]);
-}
-let pickI=0,pickL=[];
-function pick(){
- pickL=[]; pickI=0;
- function show(){
-  let t=`PICK 4 HEROES - FF4 Style\nLike Cecil, Kain, Rosa, Rydia\n`;
-  HEROES.forEach((h,i)=>{ t+=`${i===pickI?'▶':''} ${h.name} ${h.role} HP${h.mx} ATK${h.atk}\n`; });
-  say(t,[
-   {l:"SELECT",f:()=>{ pickL.push({...HEROES[pickI],atb:0}); if(pickL.length>=4){ party=pickL; state='OVER'; playM('over'); draw(); say("Party: "+party.map(p=>p.name).join(', ')+"\nFind towns and hatch ▼\nD-Pad moves. Controller works."); } else show(); }},
-   {l:"NEXT",f:()=>{ pickI=(pickI+1)%HEROES.length; show(); }},
-   {l:"PREV",f:()=>{ pickI=(pickI-1+HEROES.length)%HEROES.length; show(); }}
-  ]);
- }
- show();
-}
-
-title();
+// CONTROLS DOUBLE CHECKED
 window.addEventListener('keydown',e=>{
- unlock();
- if(e.key==='ArrowUp'||e.key==='w') move(0,-1);
- if(e.key==='ArrowDown'||e.key==='s') move(0,1);
- if(e.key==='ArrowLeft'||e.key==='a') move(-1,0);
- if(e.key==='ArrowRight'||e.key==='d') move(1,0);
- if(e.key==='Enter') confirm();
- if(e.key==='Escape') cancel();
+ unlockM();
+ if(['ArrowUp','ArrowDown'].includes(e.key)) e.preventDefault();
+ if(e.key==='ArrowUp'||e.key==='w') moveChoice(-1);
+ if(e.key==='ArrowDown'||e.key==='s') moveChoice(1);
+ if(e.key==='Enter'||e.key===' '||e.key==='a'||e.key==='A') confirmChoice();
 });
+
+let pad=null, lastB=[];
+window.addEventListener("gamepadconnected",e=>{pad=e.gamepad.index;});
+setInterval(()=>{
+ if(pad===null){ const gps=navigator.getGamepads(); for(let i=0;i<gps.length;i++) if(gps[i]) pad=i; }
+ if(pad!==null){
+  const g=navigator.getGamepads()[pad]; if(!g) return;
+  let ay=g.axes[1];
+  if(ay<-0.6 &&!lastB.axUp){ moveChoice(-1); lastB.axUp=true; } else if(ay>-0.3) lastB.axUp=false;
+  if(ay>0.6 &&!lastB.axDown){ moveChoice(1); lastB.axDown=true; } else if(ay<0.3) lastB.axDown=false;
+  if(g.buttons[12]?.pressed &&!lastB[12]) moveChoice(-1);
+  if(g.buttons[13]?.pressed &&!lastB[13]) moveChoice(1);
+  if(g.buttons[0]?.pressed &&!lastB[0]) confirmChoice();
+  if(g.buttons[1]?.pressed &&!lastB[1]){ /* back */ if(curPage>1) showPage(curPage-1); }
+  lastB=g.buttons.map(b=>b.pressed);
+  if(g.buttons.some(b=>b.pressed)) unlockM();
+ }
+},90);
+
+showPage(1);
 </script>
 </body>
 </html>
